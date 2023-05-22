@@ -10,7 +10,6 @@ void readMudst(Int_t nEvents, Int_t nFiles, TString InputFileList, TString Outpu
   // List of member links in the chain
   StChain*                    chain  =  new StChain ;
   StMuDstMaker*          muDstMaker  =  new StMuDstMaker(0,0,"",InputFileList,"MuDst",nFiles) ;
-  SimpleReaderMaker* AnalysisCode  =  new SimpleReaderMaker(muDstMaker) ;
  
   // Load the DB Maker
   St_db_Maker* dbMk = new St_db_Maker("db","MySQL:StarDb","$STAR/StarDb"); 
@@ -32,6 +31,9 @@ void readMudst(Int_t nEvents, Int_t nFiles, TString InputFileList, TString Outpu
   }
     
   StFcsDbMaker *fcsDbMkr = new StFcsDbMaker();
+
+  //Analysis Maker
+  SimpleReaderMaker* AnalysisCode  =  new SimpleReaderMaker(muDstMaker) ;
 
   // Turn off everything but FCS Hits in order to speed up the analysis and eliminate IO
   muDstMaker -> SetStatus("*",0) ;                // Turn off all branches
