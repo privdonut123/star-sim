@@ -10,6 +10,7 @@ class StMuDstMaker ;
 class TFile        ;
 class TTree        ;
 class StFcsDb      ;
+class StEpdGeom    ;
 
 class SimpleReaderMaker : public StMaker
 {
@@ -18,6 +19,7 @@ class SimpleReaderMaker : public StMaker
 
   StMuDstMaker* mMuDstMaker ;                      //  Make MuDst pointer available to member functions
   StFcsDb* mFcsDb = 0 ;
+  StEpdGeom* mEpdgeo = 0 ;
 
   //Output file and tree
   TFile* out_file;

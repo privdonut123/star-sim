@@ -6,6 +6,7 @@ void readMudst(Int_t nEvents, Int_t nFiles, TString InputFileList, TString Outpu
   gROOT   -> Macro("Load.C");
   gSystem -> Load("StFcsDbMaker");
   gSystem -> Load("SimpleReaderMaker.so");
+  gSystem -> Load("StEpdUtil");
 
   // List of member links in the chain
   StChain*                    chain  =  new StChain ;

@@ -13,6 +13,8 @@
 #include "StFcsDbMaker/StFcsDbMaker.h"
 #include "StFcsDbMaker/StFcsDb.h"
 
+#include "StRoot/StEpdUtil/StEpdGeom.h"
+
 #include "TTree.h"
 #include "TFile.h"
 #include "TObjArray.h"
@@ -25,6 +27,8 @@ SimpleReaderMaker::SimpleReaderMaker( StMuDstMaker* maker ) : StMaker("SimpleRea
   out_tree = NULL;
   mOutputFileName = "";
   mEventsProcessed = 0;
+
+  mEpdgeo = new StEpdGeom;  //EPD geom.
 
   mMuDstMaker = maker ;     // Pass MuDst pointer to DstAnlysisMaker Class member functions
 }
@@ -76,24 +80,48 @@ Int_t SimpleReaderMaker::Make( )
   for(UInt_t ihit = 0 ; ihit < hits->numberOfHits() ; ihit++){
 
   	StMuFcsHit* hit = hits->getHit(ihit); // Pointer to a hit
+	
+	int det = hit->detectorId();
 
-        if( hit->detectorId() < kFcsNDet){ //Some entries in MuDST file have detid > 5
+        if( det < kFcsNDet ){ //Some entries in MuDST file have detid > 5
     
-    		Cal_detid[Cal_nhits] = hit->detectorId();
+    		Cal_detid[Cal_nhits] = det;
    		Cal_hitid[Cal_nhits] = hit->id();
     		Cal_adcsum[Cal_nhits] = hit->adcSum();
     		Cal_hit_energy[Cal_nhits] = hit->energy();
 
-        	StThreeVectorD xyz = mFcsDb->getStarXYZ(hit->detectorId(),hit->id());
+		if( det <= kFcsHcalSouthDetId ){
+        		StThreeVectorD xyz = mFcsDb->getStarXYZ(det,hit->id());
 
-    		Cal_hit_posx[Cal_nhits] = xyz.x();
-    		Cal_hit_posy[Cal_nhits] = xyz.y();
-    		Cal_hit_posz[Cal_nhits] = xyz.z();
-
+    			Cal_hit_posx[Cal_nhits] = xyz.x();
+    			Cal_hit_posy[Cal_nhits] = xyz.y();
+    			Cal_hit_posz[Cal_nhits] = xyz.z();
+		}
+	      	else if(det==kFcsPresNorthDetId || det==kFcsPresSouthDetId){ //EPD as Pres.
+			//Adapted from code StFcsEventDisplay.cxx
+			double zepd=375.0;
+			double zfcs=710.0+13.90+15.0;
+			double zr=zfcs/zepd;
+			int pp,tt,n;
+			double x[5],y[5];
+			double xsum(0), ysum(0);
+	       	 	mFcsDb->getEPDfromId(det,hit->id(),pp,tt);
+			mEpdgeo->GetCorners(100*pp+tt,&n,x,y);
+ 		
+			//Get average of corner positions
+			//N.B. Number of corners is usually 4, sometimes 5	
+			for(int i=0; i<n; i++){
+			    xsum += zr*x[i];
+			    ysum += zr*y[i];
+			}
+			Cal_hit_posx[Cal_nhits] = xsum/n;
+                	Cal_hit_posy[Cal_nhits] = ysum/n;
+                	Cal_hit_posz[Cal_nhits] = zepd;
+	    	}
 		//Increment number of hits
 		Cal_nhits++;
 	}
-  }
+  } //Loop over FCS hits
 
   mEventsProcessed++ ;
   
