@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<job nProcesses="1">
+
+<command> 
+        stardev
+	ln -s starsim.pythia8.C starsim.C
+        root4star -q -b starsim.C\(1000\) 
+</command> 
+
+<SandBox installer="ZIP">
+        <Package>
+              	<File>file:./starsim.pythia8.C</File>
+        </Package>
+</SandBox>
+
+<stdout URL="file:./log/$JOBID.out"/>
+<stderr URL="file:./log/$JOBID.err"/>
+
+<output fromScratch="*.root" toURL="file:/star/u/bschmookler/analysis/simulation/" />
+<output fromScratch="*.fzd" toURL="file:/star/u/bschmookler/analysis/simulation/" />
+
+</job>
+
