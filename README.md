@@ -16,6 +16,7 @@ For a muDST file containing STAR forward upgrade data, we have two codes which c
    ```
    
 2. For the FCS, reading the time-dependent ADC signal and then using <i>StEvent</i> classes. This approach can be found in the macro [runMudst.C](runMudst.C).
+
    To run the macro on a single file, the following command can be used:
    ```
    root4star -b -q 'runMudst.C(0,1,"input/zfa_prod/st_physics_23072003_raw_1000002.MuDst.root")'
