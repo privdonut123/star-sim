@@ -2,9 +2,11 @@
 
 How to setup
 ------------
-Using the <i>stardev</i> environment, follow the instructions on [this site](https://www.star.bnl.gov/protected/spin/akio/fcs/howto_MC_github.html). (N.B. I decided to use the main branch -- which seems more up-to-date -- instead of the one mentioned in the link.)
+Using the <i>stardev</i> environment, follow the instructions on [this site](https://www.star.bnl.gov/protected/spin/akio/fcs/howto_MC_github.html). (N.B. I decided to use the main branch to download the files, instead of the other one mentioned in the link.)
 
-In order to save MuDST files, some changes 
+In order to save the simulation output to a MuDST file, some changes need to be made to the runSimBfc.C file. These changes are implemented in the [runSimBfc.C](runSimBfc.C) file in this repository.
+
+For the FCS, we extract the hit energy directly from the <i>.fzd</i> file by running the <i>WaveFormFitMaker</i> as described [here](https://github.com/star-bnl/star-sw/blob/main/StRoot/StFcsWaveformFitMaker/StFcsWaveformFitMaker.cxx#L475).
 
 Single-particle simulation
 --------------------------
