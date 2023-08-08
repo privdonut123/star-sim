@@ -1,11 +1,26 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
-<job nProcesses="1">
+<job nProcesses="10">
 
 <command> 
         stardev
 	ln -s starsim.pythia8.C starsim.C
-        root4star -q -b starsim.C\(1000\) 
+        
+	set seed_temp=`od -vAn -N4 -tu4 &lt; /dev/urandom`
+	set myseed=`expr ${seed_temp} % 10000000`
+
+	echo "Running with seed ${myseed}!"
+	echo "Process number is ${JOBINDEX}"
+	echo "Starting simulation..."
+	echo ""
+	
+	root4star -q -b starsim.C\(1000,${myseed}\)
+
+	echo "Finished simulation."
+	echo ""
+
+	mv pythia8.starsim.root pythia8.starsim_${JOBINDEX}.root
+	mv pythia8.starsim.fzd pythia8.starsim_${JOBINDEX}.fzd 
 </command> 
 
 <SandBox installer="ZIP">
@@ -17,8 +32,8 @@
 <stdout URL="file:./log/$JOBID.out"/>
 <stderr URL="file:./log/$JOBID.err"/>
 
-<output fromScratch="*.root" toURL="file:/star/u/bschmookler/analysis/simulation/" />
-<output fromScratch="*.fzd" toURL="file:/star/u/bschmookler/analysis/simulation/" />
+<output fromScratch="*.root" toURL="file:/star/u/bschmookler/analysis/simulation/outfiles/" />
+<output fromScratch="*.fzd" toURL="file:/star/u/bschmookler/analysis/simulation/outfiles/" />
 
 </job>
 

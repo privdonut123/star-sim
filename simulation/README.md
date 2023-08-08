@@ -39,10 +39,13 @@ To generate events and run those events through the STAR detector simulation, we
 ```
 root4star -b -q 'starsim.C(1000)'
 ```
-This creates a ROOT file with the generated particles and a <i>.fzd</i> file with the detector response information. The simulation can also be performed using the STAR scheduler:
+This creates a ROOT file with the generated particles and a <i>.fzd</i> file with the detector response information. 
+
+The simulation can also be performed using the STAR scheduler:
 ```
 star-submit starsim.xml
 ```
+This will submit 10 jobs with 1000 events each.
 
 The events can then be reconstructed by doing
 ```
