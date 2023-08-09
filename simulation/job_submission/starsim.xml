@@ -16,11 +16,18 @@
 	
 	root4star -q -b starsim.C\(1000,${myseed}\)
 
-	echo "Finished simulation."
+	echo "Finished detector simulation."
+	echo ""
+
+	echo "Starting reconstruction."
+	echo ""
+
+	root4star -b -q 'runSimBfc.C(1000,1,"pythia")'
+	echo "Finished reconstruction."
 	echo ""
 
 	mv pythia8.starsim.root pythia8.starsim_${JOBINDEX}.root
-	mv pythia8.starsim.fzd pythia8.starsim_${JOBINDEX}.fzd 
+	mv SimpleTree.root SimpleTree_pythia8_${JOBINDEX}.root
 </command> 
 
 <SandBox installer="ZIP">
@@ -33,7 +40,6 @@
 <stderr URL="file:./log/$JOBID.err"/>
 
 <output fromScratch="*.root" toURL="file:/star/u/bschmookler/analysis/simulation/outfiles/" />
-<output fromScratch="*.fzd" toURL="file:/star/u/bschmookler/analysis/simulation/outfiles/" />
 
 </job>
 
