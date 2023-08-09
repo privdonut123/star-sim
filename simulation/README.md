@@ -8,6 +8,8 @@ In order to save the simulation output to a MuDST file, some changes need to be 
 
 For the FCS, we extract the hit energy directly from the <i>.fzd</i> file by running the <i>WaveFormFitMaker</i> with the option given [here](https://github.com/star-bnl/star-sw/blob/main/StRoot/StFcsWaveformFitMaker/StFcsWaveformFitMaker.cxx#L475). In order to save the ADC sum to the output MuDST file, we need to add the line ```hits[i]->setAdcSum(adc);``` right after the code [here](https://github.com/star-bnl/star-sw/blob/main/StRoot/StFcsFastSimulatorMaker/StFcsFastSimulatorMaker.cxx#L323).
 
+It is also possible to run using only the libraries included in the <i>stardev</i> environment, provided you remove the trigger libraries from [runSimBfc.C](runSimBfc.C) and don't wish to save the ADC sum.
+
 Single-particle simulation
 --------------------------
 To run a single-particle simulation, we can use the [runSimBfc.C](runSimBfc.C) code. To run 100 single negative pion events for pion with 30 GeV energy and Vz = 0, do the following:
@@ -24,7 +26,7 @@ if(e>0.0)
 ```
 This means the pion will be generated within the pseudorapidity range of 3.0 < eta < 3.01.
 
-This creates a ROOT file with the generated particles and a <i>.fzd</i> file with the detector response information. The events can then be reconstructed by doing
+This creates a ROOT file with the generated particles, as well as a <i>.fzd</i> file with the detector response information. The events can then be reconstructed by doing
 ```
 root4star -b -q runSimBfc.C'(100,1,"pi-",202207,0,30)'
 ```
@@ -35,19 +37,11 @@ root4star -b -q 'root4star -b -q 'readMudst.C(0,1,"input/pi-.MuDst.root")'
 
 Pythia8 simulation
 ------------------
-To generate events and run those events through the STAR detector simulation, we use the [starsim.pythia8.C](starsim.pythia8.C) code and run as follows:
+To generate events and run those events through the STAR detector simulation, we use the [starsim.pythia8.C](starsim.pythia8.C) code. We create a softlink called ```starsim.C``` and run as follows:
 ```
 root4star -b -q 'starsim.C(1000)'
 ```
-This creates a ROOT file with the generated particles and a <i>.fzd</i> file with the detector response information. 
-
-The simulation can also be performed using the STAR scheduler:
-```
-star-submit starsim.xml
-```
-This will submit 10 jobs with 1000 events each.
-
-The events can then be reconstructed by doing
+This creates a ROOT file with the generated particles, as well as a <i>.fzd</i> file with the detector response information. The events can then be reconstructed by doing
 ```
 root4star -b -q 'runSimBfc.C(1000,1,"pythia")'
 ```
@@ -55,3 +49,9 @@ This generates a MuDST file, which can then be processed to create a simple ROOT
 ```
 root4star -b -q 'readMudst.C(0,1,"input/pythia8.MuDst.root")'
 ```
+
+### Pythia8 simulation with event filtering
+You can also filter the generated Pythia8 events before passing them through the detector simulation. In order to include the [FCS fastjet filter](https://github.com/star-bnl/star-sw/blob/main/StRoot/StarGenerator/FILT/FcsJetFilter.cxx), use the [starsim.pythia8_filter.C](starsim.pythia8_filter.C) code in this repository. All other steps are the same as described above.
+
+### Running higher statistics simulations using the batch farm
+To run events using the STAR scheduler, follow the instructions in [this](job_submission) subdirectory.
