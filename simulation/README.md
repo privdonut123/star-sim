@@ -8,7 +8,7 @@ In order to save the simulation output to a MuDST file, some changes need to be 
 
 For the FCS, we extract the hit energy directly from the <i>.fzd</i> file by running the <i>WaveFormFitMaker</i> with the option given [here](https://github.com/star-bnl/star-sw/blob/main/StRoot/StFcsWaveformFitMaker/StFcsWaveformFitMaker.cxx#L475). In order to save the ADC sum to the output MuDST file, we need to add the line ```hits[i]->setAdcSum(adc);``` right after the code [here](https://github.com/star-bnl/star-sw/blob/main/StRoot/StFcsFastSimulatorMaker/StFcsFastSimulatorMaker.cxx#L323).
 
-It is also possible to run using only the libraries included in the <i>stardev</i> environment, provided you remove the trigger libraries from [runSimBfc.C](runSimBfc.C) and don't wish to save the ADC sum.
+It is also possible to run using the compiled libraries in <i>stardev</i> environment, provided you compile the libraries in ```StSpinPool```. If you wish to save the ADC sum you need to modify the ```StFcsFastSimulatorMaker``` as described above.
 
 Single-particle simulation
 --------------------------
@@ -51,7 +51,7 @@ root4star -b -q 'readMudst.C(0,1,"input/pythia8.MuDst.root")'
 ```
 
 ### Pythia8 simulation with event filtering
-You can also filter the generated Pythia8 events before passing them through the detector simulation. In order to include the [FCS fastjet filter](https://github.com/star-bnl/star-sw/blob/main/StRoot/StarGenerator/FILT/FcsJetFilter.cxx), use the [starsim.pythia8_filter.C](starsim.pythia8_filter.C) code in this repository. All other steps are the same as described above.
+You can also filter the generated Pythia8 events before passing them through the detector simulation. In order to include the [FCS jet filter](https://github.com/star-bnl/star-sw/blob/main/StRoot/StarGenerator/FILT/FcsJetFilter.cxx), use the [starsim.pythia8_filter.C](starsim.pythia8_filter.C) code in this repository. All other steps are the same as described above.
 
 ### Running higher statistics simulations using the batch farm
 To run events using the STAR scheduler, follow the instructions in [this](job_submission) subdirectory.

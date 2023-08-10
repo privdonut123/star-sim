@@ -4,6 +4,8 @@
 
 <command> 
         stardev
+	cons
+
 	ln -s starsim.pythia8.C starsim.C
         
 	set seed_temp=`od -vAn -N4 -tu4 &lt; /dev/urandom`
@@ -23,6 +25,7 @@
 	echo ""
 
 	root4star -b -q 'runSimBfc.C(1000,1,"pythia")'
+
 	echo "Finished reconstruction."
 	echo ""
 
@@ -33,6 +36,8 @@
 <SandBox installer="ZIP">
         <Package>
               	<File>file:./starsim.pythia8.C</File>
+		<File>file:./runSimBfc.C</File>
+		<File>file:./StRoot</File>
         </Package>
 </SandBox>
 

@@ -2,7 +2,7 @@
 
 Making a simple ROOT file for analysis
 --------------------------------------
-For a muDST file containing STAR forward upgrade data, we have two codes which can read the MuDST file and create a simple ROOT TTree.
+For a MuDST file containing STAR forward upgrade data, we have two codes which can read the MuDST file and create a simple ROOT TTree.
 
 1. Reading the muDST classes directly. This approach can be found in the macro [readMudst.C](readMudst.C).
    
