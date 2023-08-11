@@ -55,7 +55,7 @@ void runSimBfc( Int_t nEvents=1000, Int_t run=1, const char* pid="jet", int TrgV
 
   StFcsDbMaker* fcsdbmkr = (StFcsDbMaker*) chain->GetMaker("fcsDbMkr");  
   cout << "fcsdbmkr="<<fcsdbmkr<<endl;
-  fcsdbmkr->setDbAccess(0);
+  //fcsdbmkr->setDbAccess(0);
 
   StFcsDb* fcsdb = (StFcsDb*) chain->GetDataSet("fcsDb");  
   cout << "fcsdb="<<fcsdb<<endl;
