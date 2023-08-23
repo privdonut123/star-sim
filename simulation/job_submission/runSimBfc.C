@@ -19,17 +19,19 @@ void runSimBfc( Int_t nEvents=1000, Int_t run=1, const char* pid="jet", int TrgV
   TString myDat;
   TString proc(pid);
 
-/*  if(proc.Contains("dy") || proc.Contains("mb") || proc.Contains("jet") || proc.Contains("dybg")){
+if(proc.Contains("dy") || proc.Contains("mb") || proc.Contains("jet") || proc.Contains("dybg")){
       myDat=Form("pythia.%s.vz%d.run%i.fzd",pid,(int)vz,run);
+  }else if(proc.Contains("pythia")){
+      myDat = "pythia8.starsim.fzd";
+  }else if(proc.Contains("herwig")){
+      myDat = "herwig6.starsim.fzd";
   }else if(e>0.0){
       myDat=Form("%s.e%d.vz%d.run%i.fzd",pid,e,(int)vz,run);
   }else{
       myDat=Form("%s.pt%3.1f.vz%d.run%i.fzd",pid,pt,(int)vz,run);
   }
-
   printf("Opening %s\n",(myDir+myDat).Data());
-*/
-  myDat = "pythia8.starsim.fzd";
+
   bfc( -1, myChain, myDir+myDat );
  
   TString outfile = myOutDir + myDat.ReplaceAll(".fzd",".root");      
