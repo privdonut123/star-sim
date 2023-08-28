@@ -43,7 +43,7 @@ root4star -b -q 'starsim.C(1000)'
 ```
 This creates a ROOT file with the generated particles, as well as a <i>.fzd</i> file with the detector response information. The events can then be reconstructed by doing
 ```
-root4star -b -q 'runSimBfc.C(1000,1,"pythia")'
+root4star -b -q 'runSimBfc.C(1000,1,"pythia8")'
 ```
 This generates a MuDST file, which can then be processed to create a simple ROOT TTree for further analysis:
 ```
@@ -53,6 +53,15 @@ root4star -b -q 'readMudst.C(0,1,"input/pythia8.MuDst.root")'
 ### Pythia8 simulation with event filtering
 You can also filter the generated Pythia8 events before passing them through the detector simulation. In order to include the [FCS jet filter](https://github.com/star-bnl/star-sw/blob/main/StRoot/StarGenerator/FILT/FcsJetFilter.cxx), use the [starsim.pythia8_filter.C](starsim.pythia8_filter.C) code in this repository. All other steps are the same as described above.
 
+Pythia6 simulation
+------------------
+To use the Pythia6 event generator instead of Pythia8, have the ```starsim.C``` softlink point to the [starsim.pythia6.C](starsim.pythia6.C) code. Then run as follows:
+```
+root4star -b -q 'starsim.C(1000)'
+root4star -b -q 'runSimBfc.C(1000,1,"pythia6")'
+root4star -b -q 'readMudst.C(0,1,"input/pythia6.MuDst.root")'
+```
+
 Herwig6 simulation
 ------------------
 To use the Herwig6 event generator instead of Pythia8, have the ```starsim.C``` softlink point to the [starsim.herwig6.C](starsim.herwig6.C) code. Then run as follows:
@@ -61,6 +70,7 @@ root4star -b -q 'starsim.C(1000)'
 root4star -b -q 'runSimBfc.C(1000,1,"herwig")'
 root4star -b -q 'readMudst.C(0,1,"input/herwig6.MuDst.root")'
 ```
+<strong> For Herwig6, the particle kinematics appear to be generated incorrectly. Need to look into this at some point. </strong>
 
 Running higher statistics simulations using the batch farm
 -----------------------------------------------------------

@@ -6,6 +6,11 @@ star-submit starsim.xml
 ```
 For each job, the generated events ROOT file and the final compressed ROOT file for analysis will be written out to the requested folder. N.B. You will need to adjust the output directories in the .xml script to point to your own folder.
 
+To run 10 Pythia6 jobs with 1000 events each:
+```
+star-submit starsim_pythia6.xml
+```
+
 To run 10 Herwig6 jobs with 1000 events each:
 ```
 star-submit starsim_herwig.xml

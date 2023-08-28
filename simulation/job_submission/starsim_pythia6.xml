@@ -6,7 +6,7 @@
         stardev
 	cons
 
-	ln -s starsim.pythia8.C starsim.C
+	ln -s starsim.pythia6.C starsim.C
         
 	set seed_temp=`od -vAn -N4 -tu4 &lt; /dev/urandom`
 	set myseed=`expr ${seed_temp} % 10000000`
@@ -24,18 +24,18 @@
 	echo "Starting reconstruction."
 	echo ""
 
-	root4star -b -q 'runSimBfc.C(1000,1,"pythia8")'
+	root4star -b -q 'runSimBfc.C(1000,1,"pythia6")'
 
 	echo "Finished reconstruction."
 	echo ""
 
-	mv pythia8.starsim.root pythia8.starsim_${JOBINDEX}.root
-	mv SimpleTree.root SimpleTree_pythia8_${JOBINDEX}.root
+	mv pythia6.starsim.root pythia6.starsim_${JOBINDEX}.root
+	mv SimpleTree.root SimpleTree_pythia6_${JOBINDEX}.root
 </command> 
 
 <SandBox installer="ZIP">
         <Package>
-              	<File>file:./starsim.pythia8.C</File>
+              	<File>file:./starsim.pythia6.C</File>
 		<File>file:./runSimBfc.C</File>
 		<File>file:./StRoot</File>
         </Package>
@@ -44,7 +44,7 @@
 <stdout URL="file:./log/$JOBID.out"/>
 <stderr URL="file:./log/$JOBID.err"/>
 
-<output fromScratch="*.root" toURL="file:/star/u/bschmookler/analysis/simulation/outfiles/pythia/" />
+<output fromScratch="*.root" toURL="file:/star/u/bschmookler/analysis/simulation/outfiles/pythia6/" />
 
 </job>
 

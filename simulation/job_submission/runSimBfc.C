@@ -21,8 +21,10 @@ void runSimBfc( Int_t nEvents=1000, Int_t run=1, const char* pid="jet", int TrgV
 
 if(proc.Contains("dy") || proc.Contains("mb") || proc.Contains("jet") || proc.Contains("dybg")){
       myDat=Form("pythia.%s.vz%d.run%i.fzd",pid,(int)vz,run);
-  }else if(proc.Contains("pythia")){
+  }else if(proc.Contains("pythia8")){
       myDat = "pythia8.starsim.fzd";
+  }else if(proc.Contains("pythia6")){
+      myDat = "pythia6.starsim.fzd";
   }else if(proc.Contains("herwig")){
       myDat = "herwig6.starsim.fzd";
   }else if(e>0.0){
