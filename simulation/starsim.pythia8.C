@@ -144,8 +144,6 @@ void starsim( Int_t nevents=10, Int_t rngSeed=1234 )
   _primary = new StarPrimaryMaker();
   {
     _primary -> SetFileName( "pythia8.starsim.root");
-    _primary -> SetVertex( 0.1, -0.1, 0.0 );
-    _primary -> SetSigma ( 0.1,  0.1, 30.0 );
     chain -> AddBefore( "geant", _primary );
   }
 
@@ -159,8 +157,8 @@ void starsim( Int_t nevents=10, Int_t rngSeed=1234 )
   command("call gstar_part"); 
   
   //Load geometry 
-  //-- don't seem to need to do this if same as passed to BFC above
-  //geometry("y2023");
+  //-- don't actually seem to need to do this if same as passed to BFC above
+  geometry("y2023");
 
 #if 1
   //

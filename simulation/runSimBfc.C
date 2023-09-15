@@ -62,7 +62,7 @@ void runSimBfc( Int_t nEvents=1000, Int_t run=1, const char* pid="jet", int TrgV
 
   StFcsDbMaker* fcsdbmkr = (StFcsDbMaker*) chain->GetMaker("fcsDbMkr");  
   cout << "fcsdbmkr="<<fcsdbmkr<<endl;
-  fcsdbmkr->setDbAccess(0);
+  fcsdbmkr->setDbAccess(1);
 
   StFcsDb* fcsdb = (StFcsDb*) chain->GetDataSet("fcsDb");  
   cout << "fcsdb="<<fcsdb<<endl;
@@ -75,7 +75,6 @@ void runSimBfc( Int_t nEvents=1000, Int_t run=1, const char* pid="jet", int TrgV
   fcssim->setDebug(1);
   fcssim->setLeakyHcal(leakyHcal);
 
-  //Weibin uncommented these three makers
   StFcsWaveformFitMaker *wff=(StFcsWaveformFitMaker *)chain->GetMaker("StFcsWaveformFitMaker");
   wff->setDebug(1);
   wff->setEnergySelect(0);
@@ -87,6 +86,7 @@ void runSimBfc( Int_t nEvents=1000, Int_t run=1, const char* pid="jet", int TrgV
   poi->setDebug(1);
   poi->setShowerShape(3);
 
+  /*
   gSystem->Load("RTS");
   gSystem->Load("StFcsTriggerSimMaker");
   StFcsTriggerSimMaker* fcsTrgSim = new StFcsTriggerSimMaker(); 
@@ -106,6 +106,7 @@ void runSimBfc( Int_t nEvents=1000, Int_t run=1, const char* pid="jet", int TrgV
   TString tqafile(outfile); tqafile.ReplaceAll(".root",Form(".thr%s.trgqa.root",epdmask)); 
   fcsTrgQa->setFilename(tqafile.Data());
   fcsTrgQa->setEcalPtThr(pt*0.75);
+  */
 
   if(eventDisplay>0){
       gSystem->Load("StEpdUtil");

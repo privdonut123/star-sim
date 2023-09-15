@@ -32,7 +32,7 @@ root4star -b -q runSimBfc.C'(100,1,"pi-",202207,0,30)'
 ```
 This generates a MuDST file, which can then be processed to create a simple ROOT TTree for further analysis:
 ```
-root4star -b -q 'root4star -b -q 'readMudst.C(0,1,"input/pi-.MuDst.root")'
+root4star -b -q 'readMudst.C(0,1,"input/pi-.MuDst.root")'
 ```
 
 Pythia8 simulation
