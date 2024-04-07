@@ -2,7 +2,14 @@
 
 How to setup
 ------------
-Using the <i>stardev</i> environment, follow the instructions on [this site](https://www.star.bnl.gov/protected/spin/akio/fcs/howto_MC_github.html). (N.B. I decided to use the main branch to download the files, instead of the other one mentioned in the link.)
+Using the <i>stardev</i> environment in your home directory, `cd ~/`, follow the instructions [here](https://github.com/jdbrice/star-sw-1/wiki#accessing-up-to-date-code). This will give you the all of the neccessary STAR libraries being worked on in the STAR FwdSoftware group. From here, run the following:
+
+```
+cd ~/star-sim/simulation
+mkdir StRoot
+ln -s ~/star-sw-fwd/StRoot/* ./StRoot/
+```
+After this, you can build the libraries using `cons`. Keep in mind, this will take awhile.
 
 In order to save the simulation output to a MuDST file, some changes need to be made to the runSimBfc.C file. These changes are implemented in the [runSimBfc.C](runSimBfc.C) file in this repository.
 

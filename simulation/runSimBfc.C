@@ -6,8 +6,8 @@ TString output_dir  = "./";
 //TString input_chain = "sdt20211025.120000,fzin,geant,FieldOn,logger,MakeEvent,fcsSim,fcsWFF,fcsCluster,fcsPoint";
 
 //Weibin's setting
-TString input_chain = "y2023,AgML,USExgeom,fzin,geant,FieldOn,logger,MakeEvent,fcsSim,fcsWFF,fcsCluster,fcsPoint,cmudst";
-
+TString input_chain = "y2023,AgML,USExgeom,db,fzin,geant,FieldOn,StEvent,logger,MakeEvent,MuDST,fcsSim,cmudst,fcs,fst,ftt,fstFastSim,fwdTrack";
+//_chain = Form("in, %s, useXgeom, AgML, db, StEvent, MakeEvent, MuDST, trgd, btof, fcs, fst, ftt, fttQA, fstMuRawHit, fwdTrack, evout, cmudst, tree", geom);
 class StFmsSimulatorMaker;
 
 void runSimBfc( Int_t nEvents=1000, Int_t run=1, const char* pid="jet", int TrgVersion=202207,
@@ -17,8 +17,14 @@ void runSimBfc( Int_t nEvents=1000, Int_t run=1, const char* pid="jet", int TrgV
 		int eventDisplay=0,
 		TString myDir=input_dir, TString myOutDir=output_dir,
 		TString myChain=input_chain, Int_t mnEvents=0){
-    
+
+  gROOT->SetMacroPath(".:/star-sw/StRoot/macros/:./StRoot/macros:./StRoot/macros/graphics:./StRoot/macros/analysis:./StRoot/macros/test:./StRoot/macros/examples:./StRoot/macros/html:./StRoot/macros/qa:./StRoot/macros/calib:./StRoot/macros/mudst:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/graphics:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/analysis:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/test:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/examples:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/html:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/qa:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/calib:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/mudst:/afs/rhic.bnl.gov/star/ROOT/36/5.34.38/.sl73_x8664_gcc485/rootdeb/macros:/afs/rhic.bnl.gov/star/ROOT/36/5.34.38/.sl73_x8664_gcc485/rootdeb/tutorials");
+
   gROOT->LoadMacro("bfc.C");
+  //gSystem->Load( "StFttSimMaker" );
+  //gSystem->Load( "libStFcsTrackMatchMaker" );
+  gSystem->Load( "libMathMore.so" );
+    //gSystem->Load( "libStarGeneratorUtil" );
   //  gROOT->Macro("loadMuDst.C");
   TString myDat;
   TString proc(pid);
@@ -73,19 +79,45 @@ void runSimBfc( Int_t nEvents=1000, Int_t run=1, const char* pid="jet", int TrgV
 
   StFcsFastSimulatorMaker *fcssim = (StFcsFastSimulatorMaker*) chain->GetMaker("fcsSim");
   fcssim->setDebug(1);
-  fcssim->setLeakyHcal(leakyHcal);
+  //fcssim->setLeakyHcal(leakyHcal);
 
   StFcsWaveformFitMaker *wff=(StFcsWaveformFitMaker *)chain->GetMaker("StFcsWaveformFitMaker");
   wff->setDebug(1);
   wff->setEnergySelect(0);
 
+  gSystem->Load("StFcsClusterMaker");
   StFcsClusterMaker *clu=(StFcsClusterMaker *)chain->GetMaker("StFcsClusterMaker");
+  clu->setTowerEThreSeed(0.1,1.0);
   clu->setDebug(1);
 
   StFcsPointMaker *poi=(StFcsPointMaker *)chain->GetMaker("StFcsPointMaker");
   poi->setDebug(1);
   poi->setShowerShape(3);
 
+    StFstFastSimMaker *fstFastSim = (StFstFastSimMaker*) chain->GetMaker( "fstFastSim" );
+
+    chain->AddMaker(fstFastSim);
+    
+
+  cout << "Loading in StFwdTrackMaker..." << endl;
+  StFwdTrackMaker *fwdTrack = (StFwdTrackMaker*) chain->GetMaker("fwdTrack");
+    if ( fwdTrack ){ //if it is in the chain
+        fwdTrack->setConfigForIdealSim( );
+        fwdTrack->setSeedFindingWithFst();
+        fwdTrack->SetGenerateTree( false );
+        fwdTrack->SetGenerateHistograms( false );
+        // write out wavefront OBJ files
+        fwdTrack->SetVisualize( false );
+        fwdTrack->SetDebug();
+    }
+
+gSystem->Load("StKumMaker.so");
+  StHadronAnalysisMaker* Hello = new StHadronAnalysisMaker();
+  TString out_file=Form("output_hadron_%s_e%d_vz%d_run%i.root",pid,e,(int)vz,run);
+  Hello->set_outputfile(out_file.Data());
+    Hello->setDebug(0);
+    chain->AddMaker(Hello);
+    cout << out_file.Data() << endl;
   /*
   gSystem->Load("RTS");
   gSystem->Load("StFcsTriggerSimMaker");
