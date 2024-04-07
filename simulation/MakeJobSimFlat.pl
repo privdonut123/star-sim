@@ -163,7 +163,11 @@ if( $SIM ){
 	#This will be the argument list use by job writer. Number of events will be added in the for loop that writes the job file so it is missing here
 	#seed pid energy pt vz npart
 	#push @DATAFILES, "$i gamma 20 0 0 1";
+<<<<<<< HEAD
 	push @DATAFILES, "$i pi- 90 0 0 1";
+=======
+	push @DATAFILES, "$i pi- 15 0 0 1";
+>>>>>>> f6bc4cf... Adding MakeJobSimFlat. Used for scheduling jobs on the cluster
     }
 }
 else{
