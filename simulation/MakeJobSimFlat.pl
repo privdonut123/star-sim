@@ -164,10 +164,14 @@ if( $SIM ){
 	#seed pid energy pt vz npart
 	#push @DATAFILES, "$i gamma 20 0 0 1";
 <<<<<<< HEAD
+<<<<<<< HEAD
 	push @DATAFILES, "$i pi- 90 0 0 1";
 =======
 	push @DATAFILES, "$i pi- 15 0 0 1";
 >>>>>>> f6bc4cf... Adding MakeJobSimFlat. Used for scheduling jobs on the cluster
+=======
+	push @DATAFILES, "$i pi- 90 0 0 1";
+>>>>>>> 20284a1... Added script to automate submitting jobs based on rapidity, energy, and mode
     }
 }
 else{
