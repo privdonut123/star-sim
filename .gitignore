@@ -1,0 +1,10 @@
+simulation/output/
+simulation/job_submission/
+*.sl73_gcc485/
+*.vscode/
+*.consign
+*.root
+*.fzd
+temp_gccflags.c
+mem.dat
+paw.metafile

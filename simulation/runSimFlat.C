@@ -48,7 +48,7 @@ void trig( Int_t n=1, char* pid="ele", float e=0.0, float pt=1.5, int npart=1, i
 	    // In kinematics, generates single particle before Make is called.	
 	    //kinematics->Kine(npart, PID, e-0.01, e+0.01, 2.2,  4.2, 0.0, 3.141592654*2.0);
 	    //kinematics->Kine(npart, PID, e-0.01, e+0.01, 3.0,  3.01, 0.0, 3.141592654*2.0);
-	    kinematics->Kine(npart, PID, e-0.01, e+0.01, 2.9,  2.91, -pi, pi);	    
+		kinematics->Kine(npart, PID, e-0.01, e+0.01, 2.9, 2.91, -pi, pi);
 	    //kinematics->Kine(npart, PID, e-0.01, e+0.01, 2.2,  4.0, 0.0, 2*pi);	    
 	    //kinematics->Kine(npart, PID, e-0.01, e+0.01, 2.60, 4.0, 0.0, 3.141592654*2.0);
 	    //kinematics->Kine( 1, PID, 2.99, 3.01, 2.50, 4.20, 0.0, 3.141592654/2.0);
