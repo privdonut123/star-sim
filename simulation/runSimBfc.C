@@ -85,7 +85,7 @@ void runSimBfc( Int_t nEvents=1000, Int_t run=1, const char* pid="jet", int TrgV
   wff->setDebug(1);
   wff->setEnergySelect(0);
 
-  gSystem->Load("StFcsClusterMaker");
+  //gSystem->Load("StFcsClusterMaker");
   StFcsClusterMaker *clu=(StFcsClusterMaker *)chain->GetMaker("StFcsClusterMaker");
   clu->setTowerEThreSeed(0.1,1.0);
   clu->setDebug(1);
@@ -94,9 +94,8 @@ void runSimBfc( Int_t nEvents=1000, Int_t run=1, const char* pid="jet", int TrgV
   poi->setDebug(1);
   poi->setShowerShape(3);
 
-    StFstFastSimMaker *fstFastSim = (StFstFastSimMaker*) chain->GetMaker( "fstFastSim" );
-
-    chain->AddMaker(fstFastSim);
+  StFstFastSimMaker *fstFastSim = (StFstFastSimMaker*) chain->GetMaker( "fstFastSim" );
+  chain->AddMaker(fstFastSim);
     
 
   cout << "Loading in StFwdTrackMaker..." << endl;
@@ -104,10 +103,10 @@ void runSimBfc( Int_t nEvents=1000, Int_t run=1, const char* pid="jet", int TrgV
     if ( fwdTrack ){ //if it is in the chain
         fwdTrack->setConfigForIdealSim( );
         fwdTrack->setSeedFindingWithFst();
-        fwdTrack->SetGenerateTree( false );
-        fwdTrack->SetGenerateHistograms( false );
+        fwdTrack->SetGenerateTree( true );
+        fwdTrack->SetGenerateHistograms( true );
         // write out wavefront OBJ files
-        fwdTrack->SetVisualize( false );
+        //fwdTrack->SetVisualize( false );
         fwdTrack->SetDebug();
     }
 
@@ -115,7 +114,7 @@ gSystem->Load("StKumMaker.so");
   StHadronAnalysisMaker* Hello = new StHadronAnalysisMaker();
   TString out_file=Form("output_hadron_%s_e%d_vz%d_run%i.root",pid,e,(int)vz,run);
   Hello->set_outputfile(out_file.Data());
-    Hello->setDebug(0);
+    Hello->setDebug(1);
     chain->AddMaker(Hello);
     cout << out_file.Data() << endl;
   /*
