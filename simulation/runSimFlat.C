@@ -36,8 +36,10 @@ void trig( Int_t n=1, char* pid="ele", float e=0.0, float pt=1.5, int npart=1, i
     char* PID = pid;
     char* ele="e-";
     char* pos="e+";
+    char *piplus="pi+";
     if(pid[0]=='e' && pid[1]=='l' && pid[2]=='e') PID=ele;
     if(pid[0]=='p' && pid[1]=='o' && pid[2]=='s') PID=pos;
+    if(pid[0]=='p' && pid[1]=='i' && pid[2]=='p') PID=piplus;
     for ( Int_t i=0; i<n; i++ ) {
 	double pi=3.141592654;
 	cout << "==== Event="<<i<<"===="<<endl;
@@ -46,16 +48,12 @@ void trig( Int_t n=1, char* pid="ele", float e=0.0, float pt=1.5, int npart=1, i
 	if(e>0.0){
 	    kinematics->SetAttr("energy",1);
 	    // In kinematics, generates single particle before Make is called.	
-	    //kinematics->Kine(npart, PID, e-0.01, e+0.01, 2.2,  4.2, 0.0, 3.141592654*2.0);
-	    //kinematics->Kine(npart, PID, e-0.01, e+0.01, 3.0,  3.01, 0.0, 3.141592654*2.0);
-		kinematics->Kine(npart, PID, e-0.01, e+0.01, 2.9, 2.91, -pi, pi);
+		kinematics->Kine(npart, PID, e-0.01, e+0.01, 3.1, 3.11, -pi, pi);
 	    //kinematics->Kine(npart, PID, e-0.01, e+0.01, 2.2,  4.0, 0.0, 2*pi);	    
-	    //kinematics->Kine(npart, PID, e-0.01, e+0.01, 2.60, 4.0, 0.0, 3.141592654*2.0);
 	    //kinematics->Kine( 1, PID, 2.99, 3.01, 2.50, 4.20, 0.0, 3.141592654/2.0);
 	}else{
 	    kinematics->SetAttr("energy",0);
 	    kinematics->Kine(npart, PID, pt-0.001, pt+0.001, 2.0, 4.4, 0.0, 2*pi);
-	    //	    kinematics->Kine(npart, PID, pt-0.01, pt+0.01, 2.9, 3.1, pi/4, pi/2);	    
 	    //kinematics->Kine(npart, PID, pt-0.01, pt+0.01, 2.9, 3.1, -2.0*pi/8.0, -pi/8.0);	    
 	}
 
@@ -76,19 +74,25 @@ void trig( Int_t n=1, char* pid="ele", float e=0.0, float pt=1.5, int npart=1, i
 }
 // ----------------------------------------------------------------------------
 void Kinematics(){
-  //  gSystem->Load( "libStarGeneratorPoolPythia6_4_23.so" );
   gSystem->Load( "libKinematics.so");
   kinematics = new StarKinematics();    
+
   primary->AddGenerator(kinematics);
 }
 // ----------------------------------------------------------------------------
 void runSimFlat( Int_t nevents=1000, Int_t run=1, 
 		 char* pid="ele", float e=0.0, float pt=1.5, float vz=0.0, int npart=1, 
 		 int ecal=1, int print=0){ 
-  gROOT->ProcessLine(".L bfc.C");{
+
+  // gSystem->Load( "libStarRoot.so" );
+  // gROOT->SetMacroPath(".:/star-sw/StRoot/macros/:./StRoot/macros:./StRoot/macros/graphics:./StRoot/macros/analysis:./StRoot/macros/test:./StRoot/macros/examples:./StRoot/macros/html:./StRoot/macros/qa:./StRoot/macros/calib:./StRoot/macros/mudst:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/graphics:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/analysis:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/test:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/examples:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/html:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/qa:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/calib:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/mudst:/afs/rhic.bnl.gov/star/ROOT/36/5.34.38/.sl73_x8664_gcc485/rootdeb/macros:/afs/rhic.bnl.gov/star/ROOT/36/5.34.38/.sl73_x8664_gcc485/rootdeb/tutorials");
+
+  gROOT->ProcessLine(".L bfc.C");
+  {
     TString simple = "y2023 geant gstar agml usexgeom";
     bfc(0, simple );
   }
+
   gSystem->Load( "libVMC.so");
   gSystem->Load( "StarGeneratorUtil.so" );
   gSystem->Load( "StarGeneratorEvent.so" );
@@ -121,8 +125,8 @@ void runSimFlat( Int_t nevents=1000, Int_t run=1,
   StarRandom::seed(run);
 
   // Setup geometry and set starsim to use agusread for input
-  //geometry("dev2022=1");
-  geometry("y2023");
+  //geometry("dev2022=1");geometry("dev2022");geometry("y2023");
+  //geometry("y2023");
   command("gkine -4 0");
   if(e>0.0){
       command(Form("gfile o %s.e%d.vz%d.run%d.fzd",pid,(int)e,(int)vz,run));
