@@ -227,7 +227,7 @@ if( $DOMISSING ){
     
     my %MissingJobs = CompareOutput($DATA,$CHECKSTR,$VERBOSE);   #Print only when verbose>=2
 
-    my $hash = substr($DATA,-7);
+    my $hash = substr($DATA,-6);
 
     open( my $oldcondor_fh, '<', "$DATA/condor/condor_$hash.job" ) or die "Could not open file '$DATA/condor/condor_$hash.job' for reading: $!";
     if( -f "$DATA/condor/condor${DOMISSING}_$hash.job" ){
@@ -290,7 +290,7 @@ if( $SIM > 0 ){
     foreach my $i (0..99){
 	#This will be the argument list use by job writer. Number of events will be added in the for loop that writes the job file so it is missing here
 	#seed pid energy pt vz npart
-	push @DATAFILES, "$i pi- 90 0 0 1";
+	push @DATAFILES, "$i mu- 90 0 0 1";
 	#push @DATAFILES, "$i pi0 10 0 0 1";
     }
 }
@@ -437,7 +437,9 @@ if( $MODE eq "simflat" ){
     system("/bin/cp $ANADIR/runSimFlat.C $CondorDir") == 0 or die "Unable to copy 'runSimFlat.C': $!";
     $JobWriter->AddInputFiles("$CondorDir/runSimFlat.C");
     my $starlibloc = "." . $ENV{'STAR_HOST_SYS'};
-    if( system("/bin/cp -L -r $ANADIR/$starlibloc $CondorDir") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/$starlibloc"); }#-L to follow symlinks
+    system("/bin/mkdir $CondorDir/$starlibloc") == 0 or die "Could not create"; #-L to follow symlinks
+    # $JobWriter->AddInputFiles("$ANADIR/$starlibloc");
+    if( system("/bin/cp -r -L $ANADIR/$starlibloc/lib $CondorDir/$starlibloc") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/$starlibloc"); }#-L to follow symlinks
     else{ print "WARNING:Unable to copy '$starlibloc'"; }
 }
 if( $MODE eq "simflatbfc" ){
@@ -862,17 +864,17 @@ sub CompareOutput
     my %OutIters;
     while( my $item = readdir $dh ){
 	#print "$item\n";
-	if( $item =~ m/Summary_\w*\.list/ ){
+	if( $item =~ m/Summary_[\w+-]*\.list/ ){
 	    open( my $summary_fh, '<', "$DirHash/$item" ) or die "Could not open file '$item' for reading: $!";
 	    my $joblevel = 0;
 	    while( my $line = <$summary_fh> ){
 		chomp $line;
-		if( $line =~ m/\_(\d{8})_\w*_(\d{7}).MuDst\.root/ ){
+		if( $line =~ m/^(\d+)\s([\w+-]+)\s(\d+)\s0\s(\d)\s1/ ){
 		    #my $iter = substr($line,-18);
 		    #$iter =~ s/.MuDst.root//;
-		    my $check = $1 . "_" . $2;
+		    my $check = "seed_" . $1 . "_pid_" . $2 . "_energy_" . $3 . "_vz_" . $4 ;
 		    $AllIters{$check} = $joblevel;
-		    #print "$line | $check | $joblevel\n";
+		    print "$line | $check | $joblevel\n";
 		    $joblevel++;
 		}
 	    }
@@ -880,11 +882,11 @@ sub CompareOutput
 	if( $item eq "Output" && -d "$DirHash/Output" ){  #Output directory for job
 	    opendir my $output_dh, "$DirHash/Output" or die "Could not open '$DirHash' for reading '$!'";
 	    while( my $outfile = readdir $output_dh ){
-		if( $outfile =~ m/${SearchString}_(\d{8})_(\d{7}).root/ ){
+		if( $outfile =~ m/([\w+-]+)\.e(\d+)\.vz(\d+)\.run(\d+)\.fzd/ ){
 		    #my $outiter = $outfile;
 		    #$outiter =~ s/StFcsPi0Maker//;
 		    #$outiter =~ s/.root//;
-		    my $crossref = $1 . "_" . $2;
+		    my $crossref = "seed_" . $4 . "_pid_" . $1 . "_energy_" . $2 . "_vz_" . $3 ;
 		    #print "$outfile | $crossref\n";
 		    $OutIters{$crossref} = 1;
 		}
