@@ -45,6 +45,8 @@ MakeJob.pl [-a I<path{.}>] E<lt>-d I<path>E<gt> [-o I<path{.}>] [-m I<type{mudst
 
 =item B<-r> I<int> recreated job level to be used with checking output option B<-c> in job folder B<-d>
 
+=item B<-f> dont check if condor, log, and Output directories are empty
+
 =item B<-h> ignore all other options, print this help, and exit; for more information do C<perldoc MakeJob.pl>
 
 =back
@@ -183,6 +185,7 @@ my $NOWRITESTDOUT;
 my $NOWRITESTDERR;
 my $MODE = "mudst";
 my $MSG = "";
+my $FORCE;
 my $SIM = 0; #Boolean for simulations
 #my $DEBUG;
 
@@ -203,6 +206,7 @@ GetOptions(
     'noerr|e'     => \$NOWRITESTDERR,
     'uuid|u=s'    => \$UUID,
     'verbose|v=i' => \$VERBOSE,
+    'force|f'     => \$FORCE,
     'help|h'      => sub { HelpMessage(0) }
     ) or HelpMessage(1);
 
@@ -290,7 +294,7 @@ if( $SIM > 0 ){
     foreach my $i (0..99){
 	#This will be the argument list use by job writer. Number of events will be added in the for loop that writes the job file so it is missing here
 	#seed pid energy pt vz npart
-	push @DATAFILES, "$i mu- 90 0 0 1";
+	push @DATAFILES, "$i pi- 90 0 0 1";
 	#push @DATAFILES, "$i pi0 10 0 0 1";
     }
 }
@@ -384,10 +388,15 @@ my $FileLoc = "$OUTDIR/$UUID_short";  #Main location for files
 
 if (! -e "$FileLoc") {system("/bin/mkdir $FileLoc") == 0 or die "Unable to make '$FileLoc': $!";}
 else{
-    print "Remove all files in folder $FileLoc (Y/n):";
-    my $input = <STDIN>; chomp $input;
-    if( $input eq "Y" ){system("/bin/rm -r $FileLoc/*") == 0 or die "Unable to remove files in '$FileLoc': $!";}
-    else{ print "WARNING: No files removed from existing folder:${UUID_short}\n"; }
+    if( $FORCE ){
+        print "Force option is on. Removing all files in folder $FileLoc\n";
+        system("/bin/rm -r $FileLoc/*") == 0 or die "Unable to remove files in '$FileLoc': $!";}
+    else{ 
+        print "Remove all files in folder $FileLoc (Y/n):";
+        my $input = <STDIN>; chomp $input;
+        if( $input eq "Y" ){system("/bin/rm -r $FileLoc/*") == 0 or die "Unable to remove files in '$FileLoc': $!";}
+        else{ print "WARNING: No files removed from existing folder:${UUID_short}\n"; }
+    }
 }
 
 if( $VERBOSE>=1 ){print "All Files to be written in '$FileLoc'\n";}
@@ -396,7 +405,8 @@ my $JobWriter = new CondorJobWriter($FileLoc,"${CshellMacro}","","${UUID_short}"
 if( $NOWRITESTDOUT ){ $JobWriter->WriteStdOut(0); }
 if( $NOWRITESTDERR ){ $JobWriter->WriteStdErr(0); }
 #Need to create directory here since this is where executable gets installed
-my $CondorDir = $JobWriter->CheckDir("condor", $TEST);  #if it doesn't exist: create condor directory, if it does exist:prompt for removal if not testing
+$JobWriter->MakeJobDirs($FORCE);
+my $CondorDir = $JobWriter->GetCondorDir();  #if it doesn't exist: create condor directory, if it does exist:prompt for removal if not testing
 #Because of the way condor job submission works the executable and the job file must be in the same directory, which is why most everything is set with respect to the condor directory
 
 my $FileSummary = "$FileLoc/Summary_${UUID}.list";  #This file will describe the kind of job that was submitted and what the data it will contain
@@ -533,7 +543,7 @@ foreach my $datafile (@DATAFILES){
     else{ $JobWriter->SetArguments( "$events outname $name xrd_${numfiles}_${runnum}_${segment}" ); }
     
     print $fh_sum "$datafile\n";
-    $JobWriter->WriteJob($numfiles,$numfiles); #Ensures it will check directory existence only once
+    $JobWriter->WriteJob($numfiles,1); #Ensures it will check directory existence only once
     $numfiles++;
 }
 
@@ -544,10 +554,16 @@ close $fh_sum;
 print "Total files: $numfiles\n";
 print "Short ID: ${UUID_short}\n";
 
-print "Submit Job (Y/n):";
-my $submitinput = <STDIN>; chomp $submitinput;
-if( $submitinput eq "Y" ){
+if( $FORCE ){
+    print "Force option is on. Submitting job\n";
     $JobWriter->SubmitJob();
+}
+else{
+    print "Submit Job (Y/n):";
+    my $submitinput = <STDIN>; chomp $submitinput;
+    if( $submitinput eq "Y" ){
+    $JobWriter->SubmitJob();
+    }
 }
 
 sub WriteBfcShellMacro
