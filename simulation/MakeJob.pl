@@ -294,7 +294,7 @@ if( $SIM > 0 ){
     foreach my $i (0..99){
 	#This will be the argument list use by job writer. Number of events will be added in the for loop that writes the job file so it is missing here
 	#seed pid energy pt vz npart
-	push @DATAFILES, "$i pi- 90 0 0 1";
+	push @DATAFILES, "$i mu- 90 0 0 1";
 	#push @DATAFILES, "$i pi0 10 0 0 1";
     }
 }

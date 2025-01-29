@@ -8,3 +8,4 @@ simulation/job_submission/
 temp_gccflags.c
 mem.dat
 paw.metafile
+simulation/debug/

@@ -6,6 +6,7 @@ for num in "${rapidity[@]}"
 do
     rapidity_dir=$(echo "$num" | tr '.' '_')
     echo "Processing rapidity: $num"
+    mkdir -p ~/MuDst/input/track_qa/eta_"$rapidity_dir"
     for file in output/simbfc/eta_${rapidity_dir}/
     do
         for dir in $(find $file -mindepth 1 -maxdepth 1 -type d)
