@@ -4,7 +4,7 @@
 #ifndef SIMPLETREE_HH
 #define SIMPLETREE_HH
 
-#include "StEnumerations.h"
+#include "StEvent/StEnumerations.h"
 #include "StMaker.h"
 #include "StFcsDbMaker/StFcsDb.h"
 

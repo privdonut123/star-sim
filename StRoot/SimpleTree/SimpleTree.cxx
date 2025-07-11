@@ -8,7 +8,7 @@
 #include "StEvent/StFcsCluster.h"
 #include "StEvent/StFcsCollection.h"
 #include "StEvent/StFcsHit.h"
-#include "StEventTypes.h"
+#include "StEvent/StEventTypes.h"
 #include "StFcsDbMaker/StFcsDbMaker.h"
 #include "StMessMgr.h"
 #include "StMuDSTMaker/COMMON/StMuTypes.hh"
