@@ -1,5 +1,7 @@
-TString input_dir   = "./";
-TString output_dir  = "./";
+TString input_dir = "./";
+TString output_dir = "./";
+// TString input_dir   = "./input/";
+// TString output_dir  = "./output/";
 //TString input_chain = "sdt20161210.120000,fzin,geant,evout,y2015,FieldOn,logger,MakeEvent,McEvout,IdTruth,ReverseField,db,fcsSim,fcsCluster,fcsPoint,-tpcDB";
 
 //Default
@@ -11,7 +13,7 @@ TString input_chain = "y2023,AgML,USExgeom,db,fzin,geant,FieldOn,StEvent,logger,
 class StFmsSimulatorMaker;
 
 void runSimBfc( Int_t nEvents=100, Int_t run=0, const char* pid="pi-", int TrgVersion=202207,
-		int debug=0, int e=30, float pt=1.5, float vz=0.0,
+		int debug=1, int e=30, float pt=1.5, float vz=0.0,
 		char* epdmask="0.0100",
 		int leakyHcal=0, 
 		int eventDisplay=0,
@@ -24,6 +26,10 @@ void runSimBfc( Int_t nEvents=100, Int_t run=0, const char* pid="pi-", int TrgVe
     //gSystem->Load( "StFttSimMaker" );
     //gSystem->Load( "libStFcsTrackMatchMaker" );
     gSystem->Load( "libMathMore.so" );
+    // gSystem->Load("StFcsEventDisplay.so")
+    // gMessMgr->SetLimit("I",0); //Turn off log info messages
+    // gMessMgr->SetLimit("Q",0); //turn off log warn messages
+    // gMessMgr->SetLimit("W",0);
     //gSystem->Load( "libStarGeneratorUtil" );
     //  gROOT->Macro("loadMuDst.C");
     TString myDat;
@@ -87,7 +93,8 @@ void runSimBfc( Int_t nEvents=100, Int_t run=0, const char* pid="pi-", int TrgVe
 
     //gSystem->Load("StFcsClusterMaker");
     StFcsClusterMaker *clu=(StFcsClusterMaker *)chain->GetMaker("StFcsClusterMaker");
-    clu->setTowerEThreSeed(0.1,1.0);
+    // clu->setTowerEThreSeed(0.01,1.0);
+    // clu->setTowerEThreSeed(0.01,0.01);
     clu->setDebug(0);
 
     StFcsPointMaker *poi=(StFcsPointMaker *)chain->GetMaker("StFcsPointMaker");
@@ -97,29 +104,54 @@ void runSimBfc( Int_t nEvents=100, Int_t run=0, const char* pid="pi-", int TrgVe
     StFstFastSimMaker *fstFastSim = (StFstFastSimMaker*) chain->GetMaker( "fstFastSim" );
     chain->AddMaker(fstFastSim);
 
-
     cout << "Loading in StFwdTrackMaker..." << endl;
+    // gSystem->Load("StFwdTrackMaker.so");
     StFwdTrackMaker *fwdTrack = (StFwdTrackMaker*) chain->GetMaker("fwdTrack");
     if ( fwdTrack ){ //if it is in the chain
-        fwdTrack->setConfigForRealisticSim();
+        // fwdTrack->setConfigForRealisticSim();
         fwdTrack->setSeedFindingWithFst();
+        // StFwdHitLoader *fwdHitLoader = new StFwdHitLoader();
+        fwdTrack->setFttHitSource(0);
+        fwdTrack->setFstHitSource(0);
         // fwdTrack->setTrackRefit( true );
-        fwdTrack->setIncludePrimaryVertexInFit( true );
+        // fwdTrack->setIncludePrimaryVertexInFit( true );
         // fwdTrack->SetGenerateTree( true );
         // fwdTrack->SetGenerateHistograms( true );
         // fwdTrack->SetMaxConnections( 900 );
         // write out wavefront OBJ files
         //fwdTrack->SetVisualize( false );
-        fwdTrack->SetDebug(0);
+        fwdTrack->SetDebug(debug);
     }
 
-    cout << "Loading in StFwdQAMaker..." << endl;
-    gSystem->Load("StFwdQAMaker.so");
-    StFwdQAMaker *fwdQA = new StFwdQAMaker();
-    
+
+    // cout << "Loading in StFwdQAMaker..." << endl;
+    // gSystem->Load("StFwdQAMaker.so");
+    // StFwdQAMaker *fwdQA = new StFwdQAMaker();
+
+    gSystem->Load("StFcsTrackMatchMaker.so");
+    StFcsTrackMatchMaker *fcsTrackMatch = new StFcsTrackMatchMaker("fcsTrackMatch");
+    fcsTrackMatch->SetDebug(debug);
+    fcsTrackMatch->setFileName("fcsTrackMatch.root");
+
+    // cout << "Loading in StFwdFitQAMaker..." << endl;
+    // gSystem->Load("StFwdUtils.so");
+    // StFwdFitQAMaker *fwdFitQA = new StFwdFitQAMaker();
+
     gSystem->Load("StKumMaker.so");
-    StHadronAnalysisMaker* Hello = new StHadronAnalysisMaker();
-    TString out_file= myOutDir +Form("output_hadron_%s_e%d_vz%d_run%i.root",pid,e,(int)vz,run);
+    TString out_file;
+    
+    
+    // StHadronAnalysisMaker* Hello = new StHadronAnalysisMaker();
+    // LOG > Testing StFcsMipFinderForHcal
+    StFcsMipFinderForHcal* Hello = new StFcsMipFinderForHcal();
+    if(proc.Contains("pythia8"))
+        {
+            out_file= myOutDir +Form("output_pythia8.root");
+        }
+    else
+        {
+            out_file= myOutDir +Form("output_hadron_%s_e%d_vz%d_run%i.root",pid,e,(int)vz,run);
+        }
     Hello->set_outputfile(out_file.Data());
         Hello->setDebug(debug);
         chain->AddMaker(Hello);
@@ -149,17 +181,16 @@ void runSimBfc( Int_t nEvents=100, Int_t run=0, const char* pid="pi-", int TrgVe
     //   fcsTrgQa->setEcalPtThr(pt*0.75);
   
 
-    if(eventDisplay>0){
-        gSystem->Load("StEpdUtil");
-        gSystem->Load("StFcsEventDisplay");
-        StFcsEventDisplay* fcsed = new StFcsEventDisplay();
-        fcsed->setMaxEvents(eventDisplay);
+    // if(eventDisplay>0){
+    //     gSystem->Load("StEpdUtil");
+    //     gSystem->Load("StFcsEventDisplay");
+    //     StFcsEventDisplay* fcsed = new StFcsEventDisplay();
+    //     fcsed->setMaxEvents(eventDisplay);
         // outfile.ReplaceAll(".root",".eventDisplay.png");
         // fcsed->setFileName(outfile.Data());
-    }
-
+    // }
     chain->Init();
     StMaker::lsMakers(chain);
-    chain->EventLoop(mnEvents,nEvents);  
+    chain->EventLoop(mnEvents,nEvents);
     chain->Finish(); 
 }
