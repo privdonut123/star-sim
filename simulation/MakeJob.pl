@@ -166,6 +166,8 @@ David Kapukchyan
 @[April 12, 2024](David Kapukchyan)
 > Changed some daq options for testing them on a production request for Run 2022 data with no TPC tracking, fcs, ftt, and fst options. Also fixed the daq option because the newer version of this program uses the output name as the second argument and the daq option has no output name only an input which needs to provided as a second argument. I changed the #WriteBfcShellMacro() to use the third argument for the input file.
 
+@[July 10, 2025](Kwuzhere)
+> Added additional options for reading in Pythia files in the simbfc mode. Specifically, pythia_dy_vz0_run$RUN_NUMBER.fzd   
 =cut
 
 #Here is the setup to check if the submit option was given
@@ -294,7 +296,7 @@ if( $SIM > 0 ){
     foreach my $i (0..99){
 	#This will be the argument list use by job writer. Number of events will be added in the for loop that writes the job file so it is missing here
 	#seed pid energy pt vz npart
-	push @DATAFILES, "$i mu- 90 0 0 1";
+	push @DATAFILES, "$i mu- 30 0 0 1";
 	#push @DATAFILES, "$i pi0 10 0 0 1";
     }
 }
@@ -333,9 +335,15 @@ else{
 		    #Read the relevant parameters from the file name
 		    if( $datafile =~ m/pythia\.([\w+-]+)\.vz(\d+)\.run(\d+)\.fzd/ ){
 			my ($i, $pid, $vz ) = ($3, $1, $2);
-			push @DATAFILES, "$i $pid 0 0 $vz $DATA/$datafile"; #@[October 31, 2023] > Not tested
+			push @DATAFILES, "$i $pid 0 0 $vz 0 $DATA/$datafile"; #@[October 31, 2023] > Not tested
 			if( $VERBOSE>=2 ){ print " - $i $pid $vz | $datafile\n"; }
 		    }
+            # TESTING: alternate pythia file name format
+            if( $datafile =~ m/pythia\_([\w+-]+)\_vz(\d+)\_run(\d+)\.fzd/ ){
+            my ($i, $pid, $vz ) = ($3, $1, $2);
+            push @DATAFILES, "$i $pid 0 0 $vz 0 $DATA/$datafile"; #@[October 31, 2023] > Not tested
+            if( $VERBOSE>=2 ){ print " - $i $pid $vz | $datafile\n"; }
+            }
 		    if( $datafile =~ m/([\w+-]+)\.e(\d+)\.vz(\d+)\.run(\d+)\.fzd/ ){
 			my ($i, $pid, $e, $vz) = ($4, $1, $2, $3);
 			push @DATAFILES, "$i $pid $e 0 $vz 1 $DATA/$datafile";
@@ -776,7 +784,9 @@ EOF
     print $fh "echo \"NumEvents:\${1}\\nRun:\${2}\\nPid:\${3}\\nEn:\${4}\\nPt:\${5}\\nVz:\${6}\\nNPart:\${7}\\n\"\n";
     if( $Level==2 ){print $fh "echo \"inputfile=\${8}\"\n";}
 
-    print $fh "set fzdname = \"\$3.e\$4.vz\$6.run\$2.fzd\"\n";
+    # print $fh "set fzdname = \"\$3.e\$4.vz\$6.run\$2.fzd\"\n";
+    # HACK for pythia
+    print $fh "set fzdname = \"pythia.\$3.vz\$6.run\$2.fzd\"\n"; 
     print $fh "echo \$fzdname\n";
 
     if( $Level==0 || $Level==1 ){
