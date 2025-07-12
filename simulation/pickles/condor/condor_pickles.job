@@ -1,0 +1,90 @@
+##### 0
+Universe     = vanilla
+GetEnv       = True
+Requirements = (CPU_Speed >= 1)
+Rank = CPU_Speed
+request_cpus = 1
+Priority = 1
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT_OR_EVICT
+transfer_input_files = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/condor/runSimFlat.C
+Executable   = RunSimFlat.csh
+Arguments = 10 0 mu- 30 0 0 1 xrd_0__
+InitialDir = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/Output
+Log        = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/log/job_pickles_$(Cluster)_$(Process).log
+Output     = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/log/job_pickles_$(Cluster)_$(Process).out
+Error      = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/log/job_pickles_$(Cluster)_$(Process).err
+Queue
+
+##### 1
+Universe     = vanilla
+GetEnv       = True
+Requirements = (CPU_Speed >= 1)
+Rank = CPU_Speed
+request_cpus = 1
+Priority = 1
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT_OR_EVICT
+transfer_input_files = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/condor/runSimFlat.C
+Executable   = RunSimFlat.csh
+Arguments = 10 1 mu- 30 0 0 1 xrd_1__
+InitialDir = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/Output
+Log        = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/log/job_pickles_$(Cluster)_$(Process).log
+Output     = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/log/job_pickles_$(Cluster)_$(Process).out
+Error      = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/log/job_pickles_$(Cluster)_$(Process).err
+Queue
+
+##### 2
+Universe     = vanilla
+GetEnv       = True
+Requirements = (CPU_Speed >= 1)
+Rank = CPU_Speed
+request_cpus = 1
+Priority = 1
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT_OR_EVICT
+transfer_input_files = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/condor/runSimFlat.C
+Executable   = RunSimFlat.csh
+Arguments = 10 2 mu- 30 0 0 1 xrd_2__
+InitialDir = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/Output
+Log        = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/log/job_pickles_$(Cluster)_$(Process).log
+Output     = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/log/job_pickles_$(Cluster)_$(Process).out
+Error      = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/log/job_pickles_$(Cluster)_$(Process).err
+Queue
+
+##### 3
+Universe     = vanilla
+GetEnv       = True
+Requirements = (CPU_Speed >= 1)
+Rank = CPU_Speed
+request_cpus = 1
+Priority = 1
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT_OR_EVICT
+transfer_input_files = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/condor/runSimFlat.C
+Executable   = RunSimFlat.csh
+Arguments = 10 3 mu- 30 0 0 1 xrd_3__
+InitialDir = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/Output
+Log        = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/log/job_pickles_$(Cluster)_$(Process).log
+Output     = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/log/job_pickles_$(Cluster)_$(Process).out
+Error      = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/log/job_pickles_$(Cluster)_$(Process).err
+Queue
+
+##### 4
+Universe     = vanilla
+GetEnv       = True
+Requirements = (CPU_Speed >= 1)
+Rank = CPU_Speed
+request_cpus = 1
+Priority = 1
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT_OR_EVICT
+transfer_input_files = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/condor/runSimFlat.C
+Executable   = RunSimFlat.csh
+Arguments = 10 4 mu- 30 0 0 1 xrd_4__
+InitialDir = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/Output
+Log        = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/log/job_pickles_$(Cluster)_$(Process).log
+Output     = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/log/job_pickles_$(Cluster)_$(Process).out
+Error      = /gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/pickles/log/job_pickles_$(Cluster)_$(Process).err
+Queue
+

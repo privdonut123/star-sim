@@ -21,13 +21,13 @@ MakeJob.pl [-a I<path{.}>] E<lt>-d I<path>E<gt> [-o I<path{.}>] [-m I<type{mudst
 
 =over 4
 
-=item B<-a> anlaysis code directory
+=item B<-a> analysis code directory
 
 =item B<-d> data file or directory with files (not needed for I<simflat> and I<simflatbfc>)
 
 =item B<-o> directory to store output
 
-=item B<-m> I<type>s: I<mudst>, I<simflat>, I<simflatbfc>, I<simbfc>, I<daq> 
+=item B<-m> I<type>s: I<mudst>, I<simflat>, I<simflatbfc>, I<simbfc>, I<daq> , I<pythia> 
 
 =item B<-u> the I<name> of the directory to create in output directory (default is random UID)
 
@@ -288,7 +288,9 @@ if(    $MODE eq "daq"     ){ $CshellMacro = "RunBfc.csh";     }
 elsif( $MODE eq "mudst"   ){ $CshellMacro = "RunMuDst.csh";   }
 elsif( $MODE eq "simflat" ){ $CshellMacro = "RunSimFlat.csh"; $SIM = 1;}
 elsif( $MODE eq "simflatbfc" ){ $CshellMacro = "RunSimFlat.csh"; $SIM = 1;}
-elsif( $MODE eq "simbfc" ){ $CshellMacro = "RunSimFlat.csh"; $SIM = -1}  #It is still sim files but the direcotyr or list of files should be specfied with -d
+elsif( $MODE eq "simbfc" ){ $CshellMacro = "RunSimFlat.csh"; $SIM = -1}  #It is still sim files but the directory or list of files should be specfied with -d
+# TESTING: adding option for pythia sim fzd files
+elsif( $MODE eq "pythia" ){ $CshellMacro = "RunSimBfc.csh"; $SIM = 1; }
 else{ print "Invalid Mode: $MODE\n"; HelpMessage(0); }
 
 if( $SIM > 0 ){
@@ -457,6 +459,16 @@ if( $MODE eq "simflat" ){
     my $starlibloc = "." . $ENV{'STAR_HOST_SYS'};
     system("/bin/mkdir $CondorDir/$starlibloc") == 0 or die "Could not create"; #-L to follow symlinks
     # $JobWriter->AddInputFiles("$ANADIR/$starlibloc");
+    if( system("/bin/cp -r -L $ANADIR/$starlibloc/lib $CondorDir/$starlibloc") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/$starlibloc"); }#-L to follow symlinks
+    else{ print "WARNING:Unable to copy '$starlibloc'"; }
+}
+# TESTING: Option for pythia fzd files
+if( $MODE eq "pythia" ){
+    WriteSimMacro( "${CondorDir}/${CshellMacro}", "${CondorDir}", 3 );
+    system("/bin/cp $ANADIR/starsim.pythia8.C $CondorDir") == 0 or die "Unable to copy 'starsim.pythia8.C': $!";
+    $JobWriter->AddInputFiles("$CondorDir/starsim.pythia8.C");
+    my $starlibloc = "." . $ENV{'STAR_HOST_SYS'};
+    system("/bin/mkdir $CondorDir/$starlibloc") == 0 or die "Could not create"; #-L to follow symlinks
     if( system("/bin/cp -r -L $ANADIR/$starlibloc/lib $CondorDir/$starlibloc") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/$starlibloc"); }#-L to follow symlinks
     else{ print "WARNING:Unable to copy '$starlibloc'"; }
 }
@@ -761,10 +773,14 @@ sub WriteSimMacro
 	if( $Level==0 ){ print "simflat)\n"; }
 	if( $Level==1 ){ print "simflatbfc)\n"; }
 	if( $Level==2 ){ print "simbfc)\n"; }
+    if( $Level==3 ){ print "pythia)\n"; }
     }
-    if( !($Level==0 || $Level==1 || $Level==2) ){ die "Oops for some reason mode did not get set to the write level ($Level)"; }
+    if( !($Level==0 || $Level==1 || $Level==2 || $Level==3 ) ){ die "Oops for some reason mode did not get set to the write level ($Level)"; }
     open( my $fh, '>', $FullFileName ) or die "Could not open file '$FullFileName' for writing: $!";
+    # TEST: checking $fh
+    print "File handle: $fh\n" if $VERBOSE>=2;
     my $sim_text = <<"EOF";
+    
 \#!/bin/csh
 
 stardev
@@ -784,15 +800,20 @@ EOF
     print $fh "echo \"NumEvents:\${1}\\nRun:\${2}\\nPid:\${3}\\nEn:\${4}\\nPt:\${5}\\nVz:\${6}\\nNPart:\${7}\\n\"\n";
     if( $Level==2 ){print $fh "echo \"inputfile=\${8}\"\n";}
 
-    # print $fh "set fzdname = \"\$3.e\$4.vz\$6.run\$2.fzd\"\n";
+    print $fh "set fzdname = \"\$3.e\$4.vz\$6.run\$2.fzd\"\n";
     # HACK for pythia
-    print $fh "set fzdname = \"pythia.\$3.vz\$6.run\$2.fzd\"\n"; 
-    print $fh "echo \$fzdname\n";
+    # print $fh "set fzdname = \"pythia.\$3.vz\$6.run\$2.fzd\"\n"; 
+    # print $fh "echo \$fzdname\n";
 
     if( $Level==0 || $Level==1 ){
 	print $fh "ls -a \$PWD\n";
 	print $fh "echo \"root4star -b -q runSimFlat.C'(\$1,\$2,\"\\\"\${3}\\\"\",\$4,\$5,\$6,\$7)'\"\n";
 	print $fh "root4star -b -q runSimFlat.C'('\$1','\$2','\\\"\$3\\\"','\$4','\$5','\$6','\$7')'\n";
+    }
+    if( $Level==3 ){ #Pythia
+        print $fh "ls -a \$PWD\n";
+        print $fh "echo \"root4star -b -q starsim.pythia8.C'(\$1,\$2)'\"\n";
+        print $fh "root4star -b -q starsim.pythia8.C'('\$1','\$2')'\n";
     }
     if( $Level==2 ){
 	my $copy_text = <<"EOF";
@@ -838,6 +859,8 @@ endif
 EOF
 	print $fh $end_text;
     }
+
+    
     
     close $fh;
     #Need to give execute permissions otherwise condor won't be able to run it

@@ -16,7 +16,7 @@
 	echo "Starting simulation..."
 	echo ""
 	
-	root4star -q -b starsim.C\(1000,${myseed}\)
+	root4star -q -b starsim.C\(10000,${myseed}\)
 
 	echo "Finished detector simulation."
 	echo ""
@@ -24,13 +24,14 @@
 	echo "Starting reconstruction."
 	echo ""
 
-	root4star -b -q 'runSimBfc.C(1000,1,"pythia8")'
+	root4star -b -q 'runSimBfc.C(10000,1,"pythia8")'
 
 	echo "Finished reconstruction."
 	echo ""
 
 	mv pythia8.starsim.root pythia8.starsim_${JOBINDEX}.root
 	mv SimpleTree.root SimpleTree_pythia8_${JOBINDEX}.root
+	mv output_hadron_pythia8_e30_vz0_run1.root output_hadron_pythia8_e30_vz0_run${JOBINDEX}.root
 </command> 
 
 <SandBox installer="ZIP">
@@ -41,10 +42,12 @@
         </Package>
 </SandBox>
 
-<stdout URL="file:./log/$JOBID.out"/>
-<stderr URL="file:./log/$JOBID.err"/>
+<!-- <stdout URL="file:./log/$JOBID.out"/> -->
+<!-- <stderr URL="file:./log/$JOBID.err"/> -->
+<stdout URL="file:/dev/null" />
+<stderr URL="file:/dev/null" />
 
-<output fromScratch="*.root" toURL="file:/star/u/bschmookler/analysis/simulation/outfiles/pythia/" />
+<output fromScratch="*.root" toURL="file:/gpfs/mnt/gpfs01/star/pwg/bmagh001/star-sim/simulation/output/test/" />
 
 </job>
 

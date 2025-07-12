@@ -12,7 +12,7 @@ TString input_chain = "y2023,AgML,USExgeom,db,fzin,geant,FieldOn,StEvent,logger,
 //_chain = Form("in, %s, useXgeom, AgML, db, StEvent, MakeEvent, MuDST, trgd, btof, fcs, fst, ftt, fttQA, fstMuRawHit, fwdTrack, evout, cmudst, tree", geom);
 class StFmsSimulatorMaker;
 
-void runSimBfc( Int_t nEvents=100, Int_t run=0, const char* pid="pi-", int TrgVersion=202207,
+void runSimBfc( Int_t nEvents=100, Int_t run=0, const char* pid="", int TrgVersion=202207,
 		int debug=1, int e=30, float pt=1.5, float vz=0.0,
 		char* epdmask="0.0100",
 		int leakyHcal=0, 
