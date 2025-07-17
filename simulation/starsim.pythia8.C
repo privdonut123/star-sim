@@ -143,7 +143,7 @@ void starsim( Int_t nevents=10, Int_t rngSeed=1234 )
   //  StarPrimaryMaker *
   _primary = new StarPrimaryMaker();
   {
-    _primary -> SetFileName( "pythia8.starsim.root");
+    // _primary -> SetFileName( "pythia8.starsim.root");
     chain -> AddBefore( "geant", _primary );
   }
 
@@ -214,7 +214,9 @@ void starsim( Int_t nevents=10, Int_t rngSeed=1234 )
   _primary -> Init();
 
   command("gkine -4 0");
-  command("gfile o pythia8.starsim.fzd");
+  TString outfile_fzd = Form("pythia8_mb_run%i.fzd", rngSeed);
+  command("gfile o " + outfile_fzd);
+  // command("gfile o pythia8.starsim.fzd");
   
 
   //
