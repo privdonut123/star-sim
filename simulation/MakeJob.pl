@@ -346,6 +346,12 @@ else{
             push @DATAFILES, "$i $pid 0 0 $vz 0 $DATA/$datafile"; #@[October 31, 2023] > Not tested
             if( $VERBOSE>=2 ){ print " - $i $pid $vz | $datafile\n"; }
             }
+            # TESTING: another pythia file name format
+            if( $datafile =~ m/pythia8\_mb\_run(\d+)\.fzd/ ){
+            my ($i, $pid, $vz ) = ($1, "mb", 0);
+            push @DATAFILES, "$i $pid 0 0 $vz 0 $DATA/$datafile"; #@[October 31, 2023] > Not tested
+            if( $VERBOSE>=2 ){ print " - $i $pid $vz | $datafile\n"; }
+            }
 		    if( $datafile =~ m/([\w+-]+)\.e(\d+)\.vz(\d+)\.run(\d+)\.fzd/ ){
 			my ($i, $pid, $e, $vz) = ($4, $1, $2, $3);
 			push @DATAFILES, "$i $pid $e 0 $vz 1 $DATA/$datafile";
@@ -465,8 +471,8 @@ if( $MODE eq "simflat" ){
 # TESTING: Option for pythia fzd files
 if( $MODE eq "pythia" ){
     WriteSimMacro( "${CondorDir}/${CshellMacro}", "${CondorDir}", 3 );
-    system("/bin/cp $ANADIR/starsim.pythia8.C $CondorDir") == 0 or die "Unable to copy 'starsim.pythia8.C': $!";
-    $JobWriter->AddInputFiles("$CondorDir/starsim.pythia8.C");
+    system("/bin/cp $ANADIR/starsim.C $CondorDir") == 0 or die "Unable to copy 'starsim.C': $!";
+    $JobWriter->AddInputFiles("$CondorDir/starsim.C");
     my $starlibloc = "." . $ENV{'STAR_HOST_SYS'};
     system("/bin/mkdir $CondorDir/$starlibloc") == 0 or die "Could not create"; #-L to follow symlinks
     if( system("/bin/cp -r -L $ANADIR/$starlibloc/lib $CondorDir/$starlibloc") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/$starlibloc"); }#-L to follow symlinks
@@ -780,7 +786,6 @@ sub WriteSimMacro
     # TEST: checking $fh
     print "File handle: $fh\n" if $VERBOSE>=2;
     my $sim_text = <<"EOF";
-    
 \#!/bin/csh
 
 stardev
@@ -800,9 +805,9 @@ EOF
     print $fh "echo \"NumEvents:\${1}\\nRun:\${2}\\nPid:\${3}\\nEn:\${4}\\nPt:\${5}\\nVz:\${6}\\nNPart:\${7}\\n\"\n";
     if( $Level==2 ){print $fh "echo \"inputfile=\${8}\"\n";}
 
-    print $fh "set fzdname = \"\$3.e\$4.vz\$6.run\$2.fzd\"\n";
+    # print $fh "set fzdname = \"\$3.e\$4.vz\$6.run\$2.fzd\"\n";
     # HACK for pythia
-    # print $fh "set fzdname = \"pythia.\$3.vz\$6.run\$2.fzd\"\n"; 
+    print $fh "set fzdname = \"pythia.\$3.vz\$6.run\$2.fzd\"\n"; 
     # print $fh "echo \$fzdname\n";
 
     if( $Level==0 || $Level==1 ){
@@ -812,8 +817,8 @@ EOF
     }
     if( $Level==3 ){ #Pythia
         print $fh "ls -a \$PWD\n";
-        print $fh "echo \"root4star -b -q starsim.pythia8.C'(\$1,\$2)'\"\n";
-        print $fh "root4star -b -q starsim.pythia8.C'('\$1','\$2')'\n";
+        print $fh "echo \"root4star -b -q starsim.C'(\$1,\$2)'\"\n";
+        print $fh "root4star -b -q starsim.C'('\$1','\$2')'\n";
     }
     if( $Level==2 ){
 	my $copy_text = <<"EOF";
