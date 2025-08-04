@@ -790,6 +790,8 @@ sub WriteSimMacro
 
 stardev
 echo \$STAR_LEVEL
+setup 64b
+echo \$STAR_HOST_SYS
 #Getting rid of 'cd' Output file will no longer bin condor dir but where it is supposed to go
 #cd $AnaDir
 \#\$1=number of events
@@ -823,7 +825,7 @@ EOF
     if( $Level==2 ){
 	my $copy_text = <<"EOF";
 #Files should be copied to temp directory in /home/tmp/$ENV{USER} or \$SCRATCH. Since each node has its own temporary disk space, a folder with your username directory may not exist in \$SCRATCH or /home/tmp/$ENV{USER}
-set tempdir = "/home/tmp/$ENV{USER}"
+set tempdir = "\$SCRATCH"
 if( ! -d \$tempdir ) then
     mkdir -p \$tempdir
 endif
