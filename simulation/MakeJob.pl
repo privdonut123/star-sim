@@ -17,27 +17,31 @@ MakeJob - Handy script for submitting condor jobs for FCS analysis and checking 
 
 =head1 SYNOPSIS
 
-MakeJob.pl [-a I<path{.}>] E<lt>-d I<path>E<gt> [-o I<path{.}>] [-m I<type{mudst}>] [-u I<name>] [-p I<"Message">] [-t] [-w] [-e] [-v I<level{1}>] [E<lt>-c stringE<gt> [-r I<int>]] [-h]
+MakeJob.pl [-a I<path{.}>] E<lt>-d I<path>E<gt> [-o I<path{.}>] [-m I<type{mudst}>] [-u I<name>] [-p I<"Message">] [-n I<nevents>] [-t] [-w] [-e] [--old] [-v I<level{1}>] [E<lt>-c stringE<gt> [-r I<int>]] [-h]
 
 =over 4
 
-=item B<-a> analysis code directory
+=item B<-a> anlaysis code directory
 
 =item B<-d> data file or directory with files (not needed for I<simflat> and I<simflatbfc>)
 
 =item B<-o> directory to store output
 
-=item B<-m> I<type>s: I<mudst>, I<simflat>, I<simflatbfc>, I<simbfc>, I<daq> , I<pythia> 
+=item B<-m> I<type>s: I<mudst>, I<multimudst>, I<simflat>, I<simflatbfc>, I<simbfc>, I<daq> 
 
 =item B<-u> the I<name> of the directory to create in output directory (default is random UID)
 
 =item B<-p> I<"Message"> to put in Summary file
+
+=item B<-n> I<number> of events to process for a single file
 
 =item B<-t> test mode
 
 =item B<-w> no stdout
 
 =item B<-e> no stderr
+
+=item B<--old> force to write condor job files in old format
 
 =item B<-v> set print out I<level>
 
@@ -77,7 +81,7 @@ Option to generate a new condor job file based on missing output files in job fo
 
 =item B<-m> I<type>, B<--mode>=I<type>
 
-Kind of job to submit: daq, mudst, simflat, simflatbfc, simbfc (default is mudst) (simflat is just single particle gun, simflatbfc is particle gun and BFC analysis, simbfc is just BFC analysis on preexisting fzd files)
+Kind of job to submit: daq, mudst, multimudst, simflat, simflatbfc, simbfc (default is mudst) (simflat is just single particle gun, simflatbfc is particle gun and BFC analysis, simbfc is just BFC analysis on preexisting fzd files). multimudst is a special mode where you pass a directory containing a set of list files and it creates jobs for each list file. Since it generates a perl script instead of a csh script, you need to be in the proper environment before submitting jobs
 
 =item B<-p> I<"Message">, B<--msg>=I<"Message">
 
@@ -103,6 +107,10 @@ Don't write to stdout
 
 Don't write to stderr
 
+=item B<--old>
+
+Flag to force the code to use #CondorJobWriter::WriteJobOld()
+
 =item B<-v> I<level>, B<--verbose>=I<level>
 
 Set the printout level (default is 1)
@@ -115,7 +123,7 @@ Print this help and ignore all other options
 
 =head1 VERSION
 
-0.4.2
+0.5.1
 
 =head1 DESCRIPTION
 
@@ -167,7 +175,38 @@ David Kapukchyan
 > Changed some daq options for testing them on a production request for Run 2022 data with no TPC tracking, fcs, ftt, and fst options. Also fixed the daq option because the newer version of this program uses the output name as the second argument and the daq option has no output name only an input which needs to provided as a second argument. I changed the #WriteBfcShellMacro() to use the third argument for the input file.
 
 @[July 10, 2025](Kwuzhere)
-> Added additional options for reading in Pythia files in the simbfc mode. Specifically, pythia_dy_vz0_run$RUN_NUMBER.fzd   
+> Added additional options for reading in Pythia files in the simbfc mode. Specifically, pythia_dy_vz0_run$RUN_NUMBER.fzd 
+
+@[April 16, 2024](David Kapukchyan)
+> Cleaned up #WriteBfcShellMacro() so it is easier to read and change the chain options.
+
+@[May 23, 2024](David Kapukchyan)
+> Implemented #MakeJobDirs() in CondorJobWriter.pm and use it here so that it creates all the directories at once then retrieves the condor folder name after it creates it.
+
+@[July 9, 2024](David Kapukchyan)
+> Option to quit at remove files prompt. Added total number of events to summary. File cap at 5000. Also now adds "raw" if it exists to output file name and appropriately adds it to the check option. Small fix to run macros for printout.
+
+@[July 30, 2024](David Kapukchyan)
+> Fixed documentation for script. Added #totalevents to count total events to process. Improved how to get hash for condor job file when remaking job file with option "r".
+
+@[August 29, 2024](David Kapukchyan)
+> Mode *daq* now copies the .$STAR_HOST_SYS folder in the specified *analysis* directory if it exists
+
+@[September 16, 2024](David Kapukchyan)
+> Mode *mudst* now copies the trigger map file "FcsSortedTrig.txt" for #StFcsRun22TriggerMap if it exists
+
+@[January 30, 2025](David Kapukchyan)
+> Made a new mode *multimudst* as well as related additions like a new script writing function #WriteMultiMudst() which generates a perl script for the job rather than a csh script. Added some code for cross-checking spin results; they are commented out because it is hacky but I will keep the code in case it is ever needed in the future. Haven't tested if the check job part of the script will work on jobs submitted using *multimudst* mode.
+
+@[March 18, 2025](David Kapukchyan)
+> Added Run 22 polarization file to jobs. Changed regex expression in main loop to handle single mudsts or mulitimusts which don't use the 7 digit format. Could be misused if not careful because now checks using one or more digits condition ("+").
+
+@[July 23, 2025](David Kapukchyan)
+> Modifications for submitting jobs from alma 9 nodes. Modified shell scripts to explicity use the $SCRATCH environment variable. Modified to be compatible with new #CondorJobWriter.
+
+@[July 30, 2025](David Kapukchyan)
+> Added a dummy csh file to the jobs generated in the multimudst mode because perl runs system commands as bash so when running perl the normal csh login doesn't get executed and the environment is all wrong. Running in a dummy csh script sets up the enviorment for perl to run correctly. This is particularly important for the Alma 9 nodes that run the STAR code in the `singularity` container.
+
 =cut
 
 #Here is the setup to check if the submit option was given
@@ -190,6 +229,8 @@ my $MSG = "";
 my $FORCE;
 my $SIM = 0; #Boolean for simulations
 #my $DEBUG;
+my $OLDJOB = 0;   #Boolean to indicate writing condor jobs using old condor format
+my $ALMA9JOB = 0; #Boolean for indicating jobs submitted through Alma 9, checks internally if host contains 'starsub'
 
 my $thiscommand = "$0";
 foreach my $arg (@ARGV){ $thiscommand = "$thiscommand" . " $arg"; }
@@ -206,6 +247,7 @@ GetOptions(
     'test|t'      => \$TEST,
     'noout|w'     => \$NOWRITESTDOUT,
     'noerr|e'     => \$NOWRITESTDERR,
+    'old'         => \$OLDJOB,
     'uuid|u=s'    => \$UUID,
     'verbose|v=i' => \$VERBOSE,
     'force|f'     => \$FORCE,
@@ -233,7 +275,16 @@ if( $DOMISSING ){
     
     my %MissingJobs = CompareOutput($DATA,$CHECKSTR,$VERBOSE);   #Print only when verbose>=2
 
-    my $hash = substr($DATA,-6);
+    my $hash = "";
+    opendir my $dh, "$DATA/condor/" or die "Could not open '$DATA/condor' for reading '$!'\n";
+    while( my $file = readdir $dh ){
+	if( $file =~ m/condor_(\w*).job/ ){
+	    $hash = $1;
+	    last;
+	}
+    }
+    closedir $dh;
+    if( $hash eq "" ){ die "Could not find the job hash(name)\n"; }
 
     open( my $oldcondor_fh, '<', "$DATA/condor/condor_$hash.job" ) or die "Could not open file '$DATA/condor/condor_$hash.job' for reading: $!";
     if( -f "$DATA/condor/condor${DOMISSING}_$hash.job" ){
@@ -286,12 +337,20 @@ if( $VERBOSE>=2 ){ print "Contents ANADIR\n"; `ls $ANADIR`; }
 my $CshellMacro = "";
 if(    $MODE eq "daq"     ){ $CshellMacro = "RunBfc.csh";     }
 elsif( $MODE eq "mudst"   ){ $CshellMacro = "RunMuDst.csh";   }
+elsif( $MODE eq "multimudst"){ $CshellMacro = "RunMultiMuDst.csh"; }
 elsif( $MODE eq "simflat" ){ $CshellMacro = "RunSimFlat.csh"; $SIM = 1;}
 elsif( $MODE eq "simflatbfc" ){ $CshellMacro = "RunSimFlat.csh"; $SIM = 1;}
 elsif( $MODE eq "simbfc" ){ $CshellMacro = "RunSimFlat.csh"; $SIM = -1}  #It is still sim files but the directory or list of files should be specfied with -d
+elsif( $MODE eq "picodst" ){ $CshellMacro = "RunPicoDst.csh"; }
 # TESTING: adding option for pythia sim fzd files
 elsif( $MODE eq "pythia" ){ $CshellMacro = "RunSimBfc.csh"; $SIM = 1; }
 else{ print "Invalid Mode: $MODE\n"; HelpMessage(0); }
+
+if( $ENV{'HOST'} =~ /starsub\d+/ ){
+    $ALMA9JOB = 1;
+}
+#@[July 23, 2025] > Hack to fix the star environment to use the rcas compilied library because STAR doesn't compile on Alma 9 which has a different STAR_HOST_SYS
+if( $ALMA9JOB ){ $ENV{'STAR_HOST_SYS'} = "sl73_x8664_gcc485"; }
 
 if( $SIM > 0 ){
     #Create simulation files
@@ -333,6 +392,12 @@ else{
 			if( $VERBOSE>=2 ){ print " - $datafile\n"; }
 		    }
 		}
+		if( $MODE eq "multimudst" ){
+		    if( $datafile =~ m/Files_\d{8}_\d+.list/ ){
+			push @DATAFILES, "$DATA/$datafile";
+			if( $VERBOSE>=2 ){ print " - $datafile\n"; }
+		    }
+		}
 		if( $MODE eq "simbfc" ){
 		    #Read the relevant parameters from the file name
 		    if( $datafile =~ m/pythia\.([\w+-]+)\.vz(\d+)\.run(\d+)\.fzd/ ){
@@ -363,6 +428,12 @@ else{
 			if( $VERBOSE>=2 ){ print " - $i $pid $pt $vz | $datafile\n"; }
 		    }
 		}
+        if($MODE eq "picodst"){
+            if( $datafile =~ m/st_physics_\d{8}_\w*.picoDst.root/ ){
+                push @DATAFILES, "$DATA/$datafile";
+                if( $VERBOSE>=2 ){ print " - $datafile\n"; }
+            }
+        }
 	    }
 	    closedir $dh;
 	}
@@ -408,9 +479,10 @@ else{
         print "Force option is on. Removing all files in folder $FileLoc\n";
         system("/bin/rm -r $FileLoc/*") == 0 or die "Unable to remove files in '$FileLoc': $!";}
     else{ 
-        print "Remove all files in folder $FileLoc (Y/n):";
+        print "Remove all files in folder $FileLoc (Y/n) or Q/q to quit:";
         my $input = <STDIN>; chomp $input;
-        if( $input eq "Y" ){system("/bin/rm -r $FileLoc/*") == 0 or die "Unable to remove files in '$FileLoc': $!";}
+        if( $input eq "Q" || $input eq "q" ){ print "Quitting\n"; exit 0; }
+        elsif( $input eq "Y" ){system("/bin/rm -r $FileLoc/*") == 0 or die "Unable to remove files in '$FileLoc': $!";}
         else{ print "WARNING: No files removed from existing folder:${UUID_short}\n"; }
     }
 }
@@ -420,9 +492,10 @@ if( $VERBOSE>=1 ){print "All Files to be written in '$FileLoc'\n";}
 my $JobWriter = new CondorJobWriter($FileLoc,"${CshellMacro}","","${UUID_short}");  #Writes the condor job files
 if( $NOWRITESTDOUT ){ $JobWriter->WriteStdOut(0); }
 if( $NOWRITESTDERR ){ $JobWriter->WriteStdErr(0); }
+if( $ALMA9JOB ){ $JobWriter->SetAlmaJob(1); }
 #Need to create directory here since this is where executable gets installed
-$JobWriter->MakeJobDirs($FORCE);
-my $CondorDir = $JobWriter->GetCondorDir();  #if it doesn't exist: create condor directory, if it does exist:prompt for removal if not testing
+$JobWriter->MakeJobDirs($FORCE);  #if it doesn't exist: create condor directory, if it does exist:prompt for removal if not testing
+my $CondorDir = $JobWriter->GetCondorDir();
 #Because of the way condor job submission works the executable and the job file must be in the same directory, which is why most everything is set with respect to the condor directory
 
 my $FileSummary = "$FileLoc/Summary_${UUID}.list";  #This file will describe the kind of job that was submitted and what the data it will contain
@@ -446,6 +519,9 @@ if( $MSG ){ print $fh_sum "$MSG\n"; }        #print a message about the job
 print "Making ${CshellMacro}\n";
 if( $MODE eq "daq" ){
     WriteBfcShellMacro( "${CondorDir}/${CshellMacro}", "${CondorDir}" );
+    my $starlibloc = "." . $ENV{'STAR_HOST_SYS'};
+    if( system("/bin/cp -L -r $ANADIR/$starlibloc $CondorDir") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/$starlibloc"); }#-L to follow symlinks
+    else{ print "WARNING:Unable to copy '$starlibloc'"; }
 }
 if( $MODE eq "mudst" ){
     #WriteMuDstShellMacro( "${CondorDir}/${CshellMacro}", "${CondorDir}" );
@@ -457,15 +533,33 @@ if( $MODE eq "mudst" ){
     my $starlibloc = "." . $ENV{'STAR_HOST_SYS'};
     if( system("/bin/cp -L -r $ANADIR/$starlibloc $CondorDir") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/$starlibloc"); }#-L to follow symlinks
     else{ print "WARNING:Unable to copy '$starlibloc'"; }
+    if( system("/bin/cp $ANADIR/FcsSortedTrig.txt $CondorDir") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/FcsSortedTrig.txt"); }
+    else{ print "WARNING:Unable to copy 'FcsSortedTrig.txt' - Fcs Trigger information will not be available"; }
+    if( system("/bin/cp $ANADIR/Run22PolForJobs.txt $CondorDir") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/Run22PolForJobs.txt"); }
+    else{ print "WARNING:Unable to copy 'Run22PolForJobs.txt' - Run 22 Polarization information is missing"; }
+}
+if( $MODE eq "multimudst" ){
+    #WriteMuDstShellMacro( "${CondorDir}/${CshellMacro}", "${CondorDir}" );
+    WriteMultiMudst( "${CondorDir}/${CshellMacro}", "${CondorDir}" );
+    $JobWriter->AddInputFiles("$CondorDir/RunMultiMuDst.pl");
+    system("/bin/cp $ANADIR/runMudst.C $CondorDir") == 0 or die "Unable to copy 'runMudst.C': $!";
+    $JobWriter->AddInputFiles("$CondorDir/runMudst.C");
+    if( system("/bin/cp $ANADIR/fcsgaincorr.txt $CondorDir") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/fcsgaincorr.txt"); }
+    else{ print "WARNING:Unable to copy 'fcsgaincorr.txt'"; }
+    my $starlibloc = "." . $ENV{'STAR_HOST_SYS'};
+    if( system("/bin/cp -L -r $ANADIR/$starlibloc $CondorDir") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/$starlibloc"); }#-L to follow symlinks
+    else{ print "WARNING:Unable to copy '$starlibloc'"; }
+    if( system("/bin/cp $ANADIR/FcsSortedTrig.txt $CondorDir") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/FcsSortedTrig.txt"); }
+    else{ print "WARNING:Unable to copy 'FcsSortedTrig.txt' - Fcs Trigger information will not be available"; }
+    if( system("/bin/cp $ANADIR/Run22PolForJobs.txt $CondorDir") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/Run22PolForJobs.txt"); }
+    else{ print "WARNING:Unable to copy 'Run22PolForJobs.txt' - Run 22 Polarization information is missing"; }
 }
 if( $MODE eq "simflat" ){
     WriteSimMacro( "${CondorDir}/${CshellMacro}", "${CondorDir}", 0 );
     system("/bin/cp $ANADIR/runSimFlat.C $CondorDir") == 0 or die "Unable to copy 'runSimFlat.C': $!";
     $JobWriter->AddInputFiles("$CondorDir/runSimFlat.C");
     my $starlibloc = "." . $ENV{'STAR_HOST_SYS'};
-    system("/bin/mkdir $CondorDir/$starlibloc") == 0 or die "Could not create"; #-L to follow symlinks
-    # $JobWriter->AddInputFiles("$ANADIR/$starlibloc");
-    if( system("/bin/cp -r -L $ANADIR/$starlibloc/lib $CondorDir/$starlibloc") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/$starlibloc"); }#-L to follow symlinks
+    if( system("/bin/cp -L -r $ANADIR/$starlibloc $CondorDir") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/$starlibloc"); }#-L to follow symlinks
     else{ print "WARNING:Unable to copy '$starlibloc'"; }
 }
 # TESTING: Option for pythia fzd files
@@ -485,18 +579,23 @@ if( $MODE eq "simflatbfc" ){
     system("/bin/cp $ANADIR/runSimBfc.C $CondorDir") == 0 or die "Unable to copy 'runSimBfc.C': $!";
     $JobWriter->AddInputFiles("$CondorDir/runSimBfc.C");
     my $starlibloc = "." . $ENV{'STAR_HOST_SYS'};
-    $JobWriter->AddInputFiles("$ANADIR/$starlibloc");
-    # if( system("/bin/cp -L -r $ANADIR/$starlibloc $CondorDir") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/$starlibloc"); }#-L to follow symlinks
-    # else{ print "WARNING:Unable to copy '$starlibloc'"; }
+    if( system("/bin/cp -L -r $ANADIR/$starlibloc $CondorDir") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/$starlibloc"); }#-L to follow symlinks
+    else{ print "WARNING:Unable to copy '$starlibloc'"; }
 }
 if( $MODE eq "simbfc" ){
     WriteSimMacro( "${CondorDir}/${CshellMacro}", "${CondorDir}", 2 );
     system("/bin/cp $ANADIR/runSimBfc.C $CondorDir") == 0 or die "Unable to copy 'runSimBfc.C': $!";
     $JobWriter->AddInputFiles("$CondorDir/runSimBfc.C");
     my $starlibloc = "." . $ENV{'STAR_HOST_SYS'};
-    system("/bin/mkdir $CondorDir/$starlibloc") == 0 or die "Could not create"; #-L to follow symlinks
-    # $JobWriter->AddInputFiles("$ANADIR/$starlibloc");
-    if( system("/bin/cp -r -L $ANADIR/$starlibloc/lib $CondorDir/$starlibloc") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/$starlibloc"); }#-L to follow symlinks
+    if( system("/bin/cp -L -r $ANADIR/$starlibloc $CondorDir") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/$starlibloc"); }#-L to follow symlinks
+    else{ print "WARNING:Unable to copy '$starlibloc'"; }
+}
+if( $MODE eq "picodst" ){
+    WritePicoDstMacro( "${CondorDir}/${CshellMacro}", "${CondorDir}" );
+    system("/bin/cp $ANADIR/runPicoDst.C $CondorDir") == 0 or die "Unable to copy 'runPicoDst.C': $!";
+    $JobWriter->AddInputFiles("$CondorDir/runPicoDst.C");
+    my $starlibloc = "." . $ENV{'STAR_HOST_SYS'};
+    if( system("/bin/cp -L -r $ANADIR/$starlibloc $CondorDir") == 0 ){ $JobWriter->AddInputFiles("$CondorDir/$starlibloc"); }#-L to follow symlinks
     else{ print "WARNING:Unable to copy '$starlibloc'"; }
 }
 
@@ -529,55 +628,84 @@ if( $VERBOSE>=1 ){print "Making job file\n";}
 
 my $numfiles = 0;
 my $nevents = 0;
-if( $NEVENTS<=0 ){ $nevents = $TEST ? 10 : 10000; }
+my $totalevents = 0;
+my $input = $JobWriter->SetInputFiles();  #@[January 26, 2026] > Hack to grab input argument (and keep it constant) needed for mode multimudst because looping over all the files and adding them as input adds the file list to every subsequent job.
+if( $NEVENTS<=0 ){ $nevents = $TEST ? 10 : 1000; }
 else{ $nevents = $NEVENTS; }
 foreach my $datafile (@DATAFILES){
     if( $numfiles==5 && $TEST ){last;}
+    if( $numfiles==50000 ){ last; } #@[February 10, 2025] > Hack:Condor job writer cannot handle more than 50k
     #$JobWriter->SetArguments("100 st_fwd_23040001_raw_0000003.daq" );
     #$JobWriter->SetArguments("10000 st_fwd_23080044_raw_1000002.daq" );
     #$JobWriter->SetArguments("$nevents $datafile" ); //for simulations this is sufficient
 
     if( $VERBOSE>=2 ){ print "$datafile\n"; }
-    my $name = $datafile;
-    my $events = $nevents;
-    my $runnum = "";    #STAR RunNumber
-    my $segment = "";   #Segment number for a given STAR file with a given RunNumber
-    if( $name =~ m/\/\w*_(2[23]\d{6})_\w*_(\d{7}).MuDst.root\/?(\d*)\/?(\d*)/ ){
-	$runnum = $1;
-	$segment = $2;
-	my $size = -1;
-	if( $3 ){#@[December 15, 2023]>Add a condition for test or if number of events is given as argument
-	    $events = $3;
-	    $events++; #Add one extra event buffer
-	    $name =~ s/\/$3//;
+    if( $MODE ne "multimudst" ){
+	my $name = $datafile;
+	my $events = $nevents;
+	my $runnum = "";    #STAR RunNumber
+	my $segment = "";   #Segment number for a given STAR file with a given RunNumber
+	my $extra = "";     #Any extra text between runnumber and iteration number like "raw"
+	if( $name =~ m/\/\w*_(2[23]\d{6})_(\w*)_(\d{7}).MuDst.root\/?(\d*)\/?(\d*)/ ){
+	    $runnum = $1;
+	    $extra = $2;
+	    $segment = $3;
+	    my $size = -1;
+	    if( $4 ){
+		$events = $4;
+		#$totalevents += $events;
+		$events++; #Add one extra event buffer
+		$name =~ s/\/$4//;
+		if( $NEVENTS<=0 ){ if( $TEST ){ $events = 100; } } #For MuDsts use 100 events when testing, need nested if statements so $events will only happen when $NEVENTS<=0 which is the correct logic
+		else{ $events = $NEVENTS; }
+	    }
+	    #if $5 is equal to empty string then match was not found so $size will stay -1, otherwise $4 is a non-empty string so process it
+	    if( $5 ne "" ){
+		$size = $5;
+		$name =~ s/\/$size//; #@[March 4, 2024] > This doesn't quite remove the '/0' from the file name if the size match was zero but for some reason running it twice with the line below does work in removing the '/0'.
+		if( $size==0 ){ $name =~ s/\/0//; }
+	    }
+	    if( $VERBOSE>=2 ){
+		print "|runnum:${runnum}|extra:${extra}|segment:${segment}|nevents:${events}|size:${size}\n";
+		print "|name:${name}\n";
+	    }
+	    if( $size == 0 ){ next; }
 	}
-	#if $4 is equal to empty string then match was not found so $size will stay -1, otherwise $4 is a non-empty string so process it
-	if( $4 ne "" ){
-	    $size = $4;
-	    $name =~ s/\/$size//; #@[March 4, 2024] > This doesn't quite remove the '/0' from the file name if the size match was zero but for some reason running it twice with the line below does work in removing the '/0'.
-	    if( $size==0 ){ $name =~ s/\/0//; }
+	#if( $runnum ){ print "WARNING:Unable to get a run number from file: ${datafile}\n"; }
+	#if( $segment ){ print "WARNING:Unable to get a segment number from file: ${datafile}\n"; }
+	$totalevents += $events;
+	if( $SIM ){ $JobWriter->SetArguments( "$events $name xrd_${numfiles}_${runnum}_${segment}" ); }
+	else{
+	    if( $extra eq "" ){ $JobWriter->SetArguments( "$events outname $name xrd_${numfiles}_${runnum}_${segment}" ); }
+	    else{ $JobWriter->SetArguments( "$events outname $name xrd_${numfiles}_${runnum}_${extra}_${segment}" ); }
 	}
-	if( $VERBOSE>=2 ){
-	    print "|runnum:${runnum}|segment:${segment}|nevents:${events}|size:${size}\n";
-	    print "|name:${name}\n";
-	}
-	if( $size == 0 ){ next; }
     }
-    #if( $runnum ){ print "WARNING:Unable to get a run number from file: ${datafile}\n"; }
-    #if( $segment ){ print "WARNING:Unable to get a segment number from file: ${datafile}\n"; }
-    if( $SIM ){ $JobWriter->SetArguments( "$events $name xrd_${numfiles}_${runnum}_${segment}" ); }
-    else{ $JobWriter->SetArguments( "$events outname $name xrd_${numfiles}_${runnum}_${segment}" ); }
+    else{
+	my $name = $datafile;
+	if( $name =~ m/(Files_\d{8}_\d+.list)/ ){
+	    my $arg = $1;
+	    my $newinput = "$input" . "," . "$datafile";
+	    $JobWriter->SetInputFiles("$newinput");
+	    $JobWriter->SetArguments( "$arg" );
+	}
+    }
     
     print $fh_sum "$datafile\n";
-    $JobWriter->WriteJob($numfiles,1); #Ensures it will check directory existence only once
+    #Directories created above so can safely ignore the check
+    if( $OLDJOB ){ $JobWriter->WriteJobOld($numfiles,1); }
+    else{ $JobWriter->WriteJob($numfiles,1); }
     $numfiles++;
 }
 
+if( ! $OLDJOB ){ $JobWriter->CloseJob($numfiles); }
+
 print $fh_sum "Total files: $numfiles\n";
+print $fh_sum "Total events: $totalevents\n";
 print $fh_sum "Command:$thiscommand\n";
 close $fh_sum;
 
 print "Total files: $numfiles\n";
+print "Total events: $totalevents\n";
 print "Short ID: ${UUID_short}\n";
 
 if( $FORCE ){
@@ -616,7 +744,7 @@ echo \$STAR_LEVEL
 echo "NumEvents:\${1}\\ninputfile:\${3}"
 #Files should be copied to temp directory in /home/tmp/$ENV{USER} or \$SCRATCH. Since each node has its own temporary disk space, a folder with my username directory may not exist in \$SCRATCH or /home/tmp/$ENV{USER}
 
-set tempdir = "/home/tmp/$ENV{USER}"
+set tempdir = "\$SCRATCH"
 if( ! -d \$tempdir ) then
     mkdir -p \$tempdir
 endif
@@ -666,7 +794,7 @@ echo \$STAR_LEVEL
 echo "NumEvents:\${1}\\ninputfile:\${2}"
 #Files should be copied to temp directory in /home/tmp/$ENV{USER} or \$SCRATCH. Since each node has its own temporary disk space, a folder with my username directory may not exist in \$SCRATCH or /home/tmp/$ENV{USER}
 
-set tempdir = "/home/tmp/$ENV{USER}"
+set tempdir = "\$SCRATCH"
 if( ! -d \$tempdir ) then
     mkdir -p \$tempdir
 endif
@@ -685,7 +813,7 @@ if( -f \$tempdir/\$name ) then
     else
         ln -s \$tempdir/\$name
         ls -a \$PWD
-        echo "root4star -b -q runMuDst.C'("\\"\$name\\"",-1,\$1)'"
+        echo "root4star -b -q runMudst.C'("\\"\$name\\"",-1,\$1)'"
         root4star -b -q runMudst.C'('\\"\$name\\"',-1,'\$1')'
         #Remove copied file since temp disks vary from node to node
         echo "Removing symlink"
@@ -733,7 +861,7 @@ set xrdnchar = `echo \$xrdname | awk '{print length(\$0)}'`
 set sub1 = `echo \$3 | awk -v l="\$xrdnchar" '{print substr(\$0,0,l)}'`
 echo "xrdname:\$xrdname | FilePrefix:\$sub1"
 if( \$xrdname == \$sub1 ) then
-    set tempdir = "/home/tmp/$ENV{USER}"
+    set tempdir = "\$SCRATCH"
     if( ! -d \$tempdir ) then
         mkdir -p \$tempdir
     endif
@@ -748,7 +876,7 @@ if( -f \$copyname ) then
     if( -z \$copyname ) then
         echo "ERROR:file '\$copyname' has zero size!"
     else
-        echo "root4star -b -q runMuDst.C'("\\"\$copyname\\"",-1,\$1)'"
+        echo "root4star -b -q runMudst.C'("\\"\$copyname\\"",-1,\$1)'"
         root4star -b -q runMudst.C'('\\"\$copyname\\"',-1,'\$1')'
     endif
     #Remove copied file since temp disks vary from node to node
@@ -768,6 +896,132 @@ EOF
     system( "/usr/bin/chmod 755 $FullFileName" )==0 or die "Unable to give execute permisions to CshellMacro: $!\n";
 }
 
+sub WriteMultiMudst
+{
+    my( $FullFileName, $AnaDir ) = @_;
+
+    #Need to make a csh dummy script so that it can run on Alma 9 nodes
+    open( my $cshfh, '>', $FullFileName ) or die "Could not open file '$FullFileName' for writing: $!";
+    print $cshfh "#!/bin/csh\n";
+    print $cshfh "stardev\n";
+    print $cshfh "./RunMultiMuDst.pl \$1\n\n";
+    close $cshfh;
+    #Need to give execute permissions otherwise condor won't be able to run it
+    system( "/usr/bin/chmod 755 $FullFileName" )==0 or die "Unable to give execute permisions to CshellMacro: $!\n";
+
+    #Get rid of the "csh" to add pl extension
+    chop $FullFileName;
+    chop $FullFileName;
+    chop $FullFileName;
+    $FullFileName = $FullFileName . "pl";
+    open( my $fh, '>', $FullFileName ) or die "Could not open file '$FullFileName' for writing: $!";
+    my $macro_text = <<"EOF";
+\#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+my \$VERBOSE = 0;
+
+my (\$filename) = \@ARGV;
+if( not defined \$filename ){ die "Please provide a file name\\n"; }
+open( my \$list_fh, '<', \$filename ) or die "Could not open file '\$filename': \$!";
+
+my \$tempdir = \$ENV{'SCRATCH'};
+if( ! -d \$tempdir ){
+    system("mkdir -p \$tempdir")==0 or die "Could not create directory '\$tempdir': \$!";
+}
+
+\#Do this so that it always has the right format for runMudst.C even if runnum is not found in filename
+my \$runnum = "00000000";
+my \$iternum = "0";      
+if( \$filename =~ m/Files_(\\d{8})_(\\d+).list/ ){
+    \$runnum = \$1;
+    \$iternum = \$2;
+}
+my \$filelist = "justfiles_\${runnum}_\${iternum}.list";
+open( my \$fh, '>', \$filelist ) or die "Could not open '\$filelist' for writing: \$!";
+
+my \%XrdFiles;  #Hash to keep track of which files were copied or not
+my \%XrdFileNames;  #Hash to keep track of copied file names which will be everything but the path
+my \$nfiles = 0;
+my \$srcfiles = "";
+while( my \$datafile = <\$list_fh> ){
+    chomp \$datafile;
+    my \$name = \$datafile;
+    if( \$name =~ m/(\\w*_2[23]\\d{6}_\\w*_\\d{7}.MuDst.root)\\/?\\d*\\/?\\d*/ ){
+	\$nfiles++;
+	my \$justfilename = \$1;
+	my \$mudstidx = index(\$name,".MuDst.root");
+	if( \$mudstidx == -1 ){ die "\\\$datafile does not contain .MuDst.root\\n"; }
+	else{
+	    \$name = substr \$name, 0, \$mudstidx+11; \#Add 11 since index returned is at the starting point of .MuDst.root
+	    \$srcfiles = \$srcfiles . \$name . " ";
+	}
+	\#print "|name:\$name\\n";
+	\#print " + 1:\$justfilename\\n";
+    	\$XrdFiles{\$name} = 0;
+	\$XrdFileNames{\$justfilename} = 0;
+    }
+}
+
+close \$list_fh;
+
+if( \$nfiles>0 ){
+    if( \$nfiles==1 ){
+    	\#After the for loop there should be an extra space in 'srcfiles'
+	print "xrdcp --nopbar --retry 3 \${srcfiles} \${tempdir}\\n";
+	system( "xrdcp --nopbar --retry 3 \${srcfiles} \${tempdir}" );
+    }
+    else{
+    	\#After the for loop there should be an extra space in 'srcfiles'
+	print "xrdcp --nopbar --parallel 4 --retry 3 \${srcfiles} \${tempdir}\\n";
+	system( "xrdcp --nopbar --parallel 4 --retry 3 \${srcfiles} \${tempdir}" );
+    }
+    opendir my \$dh, \$tempdir  or die "Unable to read '\$tempdir': \$!";
+    my \$nfilescopied = 0;
+    while( my \$content = readdir \$dh ){
+	\#print " + \$content\\n";
+	if( exists \$XrdFileNames{\$content} ){
+	    \$XrdFileNames{\$content} = 1;
+	    \$nfilescopied++;
+	    \#print "  - \$content | \$XrdFileNames{\$content}\\n";
+	    print \$fh "\${tempdir}/\${content}\\n";
+	}
+    }
+    print \$fh "\\n"; \#Add an extra newline
+    close \$fh;
+    closedir \$dh;
+    
+    system("cat \$filelist"); #print contents of files.list
+    system("ls \$tempdir");  #print contents of tempdir after datafile loop
+    if( \$nfilescopied>0 ){
+    	print "root4star -b -q runMudst.C'(\\"\$filelist\\",-1,-2)'\\n";
+	system( "root4star -b -q runMudst.C'(\\"\$filelist\\",-1,-2)'" ); #Process all events in all files
+    }
+    else{ print "Unable to xrdcp any files skipping running root\n"; }
+
+    foreach my \$processed (keys \%XrdFileNames){
+	if( \$XrdFileNames{\$processed}==1 ){
+	    print "removing \${tempdir}/\$processed\\n";
+	    system("/bin/rm \${tempdir}/\${processed}");
+	}
+    }
+}
+
+print "removing \$filelist\\n";
+system("/bin/rm \$filelist");
+
+system("/bin/ls .");
+system("/bin/ls \$tempdir");
+
+EOF
+
+    print $fh $macro_text;
+    close $fh;
+    #Need to give execute permissions otherwise condor won't be able to run it
+    system( "/usr/bin/chmod 755 $FullFileName" )==0 or die "Unable to give execute permisions to CshellMacro: $!\n";
+}
 
 sub WriteSimMacro
 {
@@ -783,13 +1037,13 @@ sub WriteSimMacro
     }
     if( !($Level==0 || $Level==1 || $Level==2 || $Level==3 ) ){ die "Oops for some reason mode did not get set to the write level ($Level)"; }
     open( my $fh, '>', $FullFileName ) or die "Could not open file '$FullFileName' for writing: $!";
-    # TEST: checking $fh
-    print "File handle: $fh\n" if $VERBOSE>=2;
     my $sim_text = <<"EOF";
 \#!/bin/csh
 
 stardev
 echo \$STAR_LEVEL
+setup 64b
+echo \$STAR_HOST_SYS
 #Getting rid of 'cd' Output file will no longer bin condor dir but where it is supposed to go
 #cd $AnaDir
 \#\$1=number of events
@@ -823,7 +1077,7 @@ EOF
     if( $Level==2 ){
 	my $copy_text = <<"EOF";
 #Files should be copied to temp directory in /home/tmp/$ENV{USER} or \$SCRATCH. Since each node has its own temporary disk space, a folder with your username directory may not exist in \$SCRATCH or /home/tmp/$ENV{USER}
-set tempdir = "/home/tmp/$ENV{USER}"
+set tempdir = "\$SCRATCH"
 if( ! -d \$tempdir ) then
     mkdir -p \$tempdir
 endif
@@ -864,13 +1118,43 @@ endif
 EOF
 	print $fh $end_text;
     }
-
-    
     
     close $fh;
     #Need to give execute permissions otherwise condor won't be able to run it
     system( "/usr/bin/chmod 755 $FullFileName" )==0 or die "Unable to give execute permisions to CshellMacro: $!\n";
 }
+
+sub WritePicoDstMacro
+{
+    my( $FullFileName, $AnaDir ) = @_;
+    if ($VERBOSE>=2 ){
+	print "$FullFileName\n";
+	print "$AnaDir\n";}
+    open( my $fh, '>', $FullFileName ) or die "Could not open file '$FullFileName' for writing: $!";
+    my $macro_text = <<"EOF";
+    
+        \#!/bin/csh
+        stardev
+        echo \$STAR_LEVEL
+        setup 64b
+        echo \$STAR_HOST_SYS
+        #Getting rid of 'cd' Output file will no longer bin condor dir but where it is supposed to go
+        #cd $AnaDir
+
+        \#\$8=inputfile
+        echo "inputfile:\${8}"
+        set tempdir = "\$SCRATCH"
+        if( ! -d \$tempdir ) then
+            mkdir -p \$tempdir
+        endif
+        root4star -b -q runPicoDst.C'("\\"\$8\\"")'
+
+
+
+EOF
+    }
+    
+    
 
 sub WriteRootMap
 {
@@ -914,21 +1198,38 @@ sub CompareOutput
 
     opendir my $dh, $DirHash or die "Could not open '$DirHash' for reading '$!'";
 
+    #Hack to check which jobs are missing the spin database
+    #print "$DirHash/log/\n";
+#    my $missingspinfiles = `grep -L --text "dump of spin bits" $DirHash/log/job_spincheckall_9834909_*.out`; #@[January 21, 2025] > From job spincheckall
+#    my $missingspinfiles = `grep -L --text "dump of spin bits" $DirHash/log/job_spincheckall2_9857654_*.out`; #@[January 22, 2025] > From job spincheckall2
+    #print "$missingspinfiles\n";
+#    my @missingspinfileslist = split(/\s+/,$missingspinfiles);
+#    my %MissingSpinIter;
+#    foreach my $missingfile (@missingspinfileslist){
+	#print "spinmissing: ${missingfile}\n";
+	#if( $missingfile =~ m/job_spincheckall_\d+_(\d+)\.out/ ){
+#	if( $missingfile =~ m/job_spincheckall2_\d+_(\d+)\.out/ ){
+#	    $MissingSpinIter{$1} = 1;
+#	    print "printcheck:$1\n";
+#	}
+#    }End Hack
+
     my %AllIters;
     my %OutIters;
     while( my $item = readdir $dh ){
 	#print "$item\n";
-	if( $item =~ m/Summary_[\w+-]*\.list/ ){
+	if( $item =~ m/Summary_\w*\.list/ ){
 	    open( my $summary_fh, '<', "$DirHash/$item" ) or die "Could not open file '$item' for reading: $!";
 	    my $joblevel = 0;
 	    while( my $line = <$summary_fh> ){
 		chomp $line;
-		if( $line =~ m/^(\d+)\s([\w+-]+)\s(\d+)\s0\s(\d)\s1/ ){
+		if( $line =~ m/\_(\d{8})_(?:raw_)?(\d+)(\.MuDst\.root|\.list)/ ){
 		    #my $iter = substr($line,-18);
 		    #$iter =~ s/.MuDst.root//;
-		    my $check = "seed_" . $1 . "_pid_" . $2 . "_energy_" . $3 . "_vz_" . $4 ;
+		    my $check = $1 . "_" . $2;
 		    $AllIters{$check} = $joblevel;
-		    print "$line | $check | $joblevel\n";
+		    #$AllIters{$joblevel} = $check; # @[Jan 22, 2025] > Hack to check spin jobs
+		    #print "$line | $check | $joblevel\n";
 		    $joblevel++;
 		}
 	    }
@@ -936,11 +1237,12 @@ sub CompareOutput
 	if( $item eq "Output" && -d "$DirHash/Output" ){  #Output directory for job
 	    opendir my $output_dh, "$DirHash/Output" or die "Could not open '$DirHash' for reading '$!'";
 	    while( my $outfile = readdir $output_dh ){
-		if( $outfile =~ m/([\w+-]+)\.e(\d+)\.vz(\d+)\.run(\d+)\.fzd/ ){
+		if( $outfile =~ m/${SearchString}_(\d{8})_(?:raw_)?(\d+).root/ ){
+		#if( $outfile =~ m/${SearchString}_(\d{8})_(\d+).root/ ){
 		    #my $outiter = $outfile;
 		    #$outiter =~ s/StFcsPi0Maker//;
 		    #$outiter =~ s/.root//;
-		    my $crossref = "seed_" . $4 . "_pid_" . $1 . "_energy_" . $2 . "_vz_" . $3 ;
+		    my $crossref = $1 . "_" . $2;
 		    #print "$outfile | $crossref\n";
 		    $OutIters{$crossref} = 1;
 		}
@@ -954,11 +1256,62 @@ sub CompareOutput
     if( $print>=2 ){ print "Missing iterations\n #. iteration number | job number\n"; }
     my %MissingJobs;
     foreach my $iter (keys %AllIters){
+	#if( $AllIters{$iter}<10000 ){
 	if( ! $OutIters{$iter} ){
 	    $MissingJobs{ $AllIters{$iter} } = 1;
-	    if( $print>=2 ){ print " ".scalar(keys %MissingJobs).". $iter | $AllIters{$iter}\n"; }
+	    if( $print>=2  ){ print " ".scalar(keys %MissingJobs).". $iter | $AllIters{$iter}\n"; }
 	}
+	#}
     }
+
+    #Hack to print jobs with missing spin database
+#    print "|MissingJobs:".scalar(keys %MissingJobs). "|MissingSpin:".scalar(keys %MissingSpinIter). "\n";
+#    foreach my $joblevel (keys %MissingSpinIter){
+	#print "|iter:$iter|Jobs:$MissingJobs{$iter}\n";
+#	if( ! $MissingJobs{ $joblevel } ){
+#	    print "spin-cross-check: $joblevel | ref: $AllIters{$joblevel} \n";
+#	}
+#    } End Hack
+    
     return %MissingJobs;
 }
+
+=begin
+    my \$name = \$datafile;
+    my \$runnum = "";    #STAR RunNumber
+    my \$segment = "";   #Segment number for a given STAR file with a given RunNumber
+    my \$extra = "";     #Any extra text between runnumber and iteration number like "raw"
+    if( \$name =~ m/\/\\w*_(2[23]\\d{6})_(\\w*)_(\\d{7}).MuDst.root\/?(\\d*)\/?(\\d*)/ ){
+	\$runnum = \$1;
+	\$extra = \$2;
+	\$segment = \$3;
+	my \$size = -1;
+	if( \$4 ){
+	    \$events = \$4;
+	    \#\$totalevents += \$events;
+	    \$events++; #Add one extra event buffer
+	    \$name =~ s/\/\$4//;
+	}
+	\#if \$5 is equal to empty string then match was not found so \$size will stay -1, otherwise \$4 is a non-empty string so process it
+	if( \$5 ne "" ){
+	    \$size = \$5;
+	    \$name =~ s/\/\$size//; \#@[March 4, 2024] > This doesn't quite remove the '/0' from the file name if the size match was zero but for some reason running it twice with the line below does work in removing the '/0'.
+	    if( \$size==0 ){ \$name =~ s/\/0//; }
+	}
+	if( \$VERBOSE>=2 ){
+	    print "|runnum:\${runnum}|extra:\${extra}|segment:\${segment}|nevents:\${events}|size:\${size}\n";
+	    print "|name:\${name}\n";
+	}
+	if( \$size == 0 ){ next; }
+    }
+    \$totalevents += \$events;
+
+    my \$copyname = "\${tempdir}/xrd_\${numfiles}_\${runnum}_\${segment}.MuDst.root";
+    print"newcopyname:\$copyname";
+    if( system( xrdcp --nopbar --retry 3 \$datafile \$copyname )==0 ){
+       \$XrdFiles{\$copyname} = 1;
+    }
+    else{ \$XrdFiles{\$copyname} = 0; }
+=cut
+
 
