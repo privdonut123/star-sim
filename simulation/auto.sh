@@ -61,7 +61,7 @@ if [ "$run_mode" == "test" ] ; then
 
     # Adjust the rapidity in runSimFlat
     sed -i $'51c\\\t\\\tkinematics->Kine(npart, PID, e-29, e+29, '"$rapidity_values"', '"$rapidity_high"', -pi, pi);' runSimFlat.C
-    sed -i $''"297"'c\\'\t'push @DATAFILES, "$i '"$pid_values"' '"$energy_values"' 0 0 1";' MakeJob.pl
+    sed -i $''"359"'c\\'\t'push @DATAFILES, "$i '"$pid_values"' '"$energy_values"' 0 0 1";' MakeJob.pl
     if [ "$mode" == "simflat" ]; then
         ./MakeJob.pl -o "output/simflat/eta_${rapidity_low_dir}/" -m "$mode" -u "$pid_values"e"$energy_values" -w -e -n 10000
     fi

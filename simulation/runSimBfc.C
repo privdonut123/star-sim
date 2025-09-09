@@ -8,7 +8,7 @@ TString output_dir = "./";
 //TString input_chain = "sdt20211025.120000,fzin,geant,FieldOn,logger,MakeEvent,fcsSim,fcsWFF,fcsCluster,fcsPoint";
 
 //Weibin's setting
-TString input_chain = "y2023,AgML,USExgeom,db,fzin,geant,FieldOn,StEvent,logger,MakeEvent,McEvent,MuDST,fcsSim,cmudst,fcs,fst,ftt,fstFastSim,fwdTrack";
+TString input_chain = "y2023,AgML,USExgeom,db,fzin,geant,FieldOn,StEvent,logger,MakeEvent,McEvent,MuDST,fcsSim,cmudst,fcs,fst,ftt,fstFastSim,fwdTrack,NoOutput";
 //_chain = Form("in, %s, useXgeom, AgML, db, StEvent, MakeEvent, MuDST, trgd, btof, fcs, fst, ftt, fttQA, fstMuRawHit, fwdTrack, evout, cmudst, tree", geom);
 class StFmsSimulatorMaker;
 
@@ -20,8 +20,8 @@ void runSimBfc( Int_t nEvents=100, Int_t run=0, const char* pid="", int TrgVersi
 		TString myDir=input_dir, TString myOutDir=output_dir,
 		TString myChain=input_chain, Int_t mnEvents=0){
 
-    gROOT->SetMacroPath(".:/star-sw/StRoot/macros/:./StRoot/macros:./StRoot/macros/graphics:./StRoot/macros/analysis:./StRoot/macros/test:./StRoot/macros/examples:./StRoot/macros/html:./StRoot/macros/qa:./StRoot/macros/calib:./StRoot/macros/mudst:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/graphics:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/analysis:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/test:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/examples:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/html:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/qa:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/calib:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/mudst:/afs/rhic.bnl.gov/star/ROOT/36/5.34.38/.sl73_x8664_gcc485/rootdeb/macros:/afs/rhic.bnl.gov/star/ROOT/36/5.34.38/.sl73_x8664_gcc485/rootdeb/tutorials");
-
+    // gROOT->SetMacroPath(".:/star-sw/StRoot/macros/:./StRoot/macros:./StRoot/macros/graphics:./StRoot/macros/analysis:./StRoot/macros/test:./StRoot/macros/examples:./StRoot/macros/html:./StRoot/macros/qa:./StRoot/macros/calib:./StRoot/macros/mudst:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/graphics:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/analysis:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/test:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/examples:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/html:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/qa:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/calib:/afs/rhic.bnl.gov/star/packages/DEV/StRoot/macros/mudst:/afs/rhic.bnl.gov/star/ROOT/36/5.34.38/.sl73_x8664_gcc485/rootdeb/macros:/afs/rhic.bnl.gov/star/ROOT/36/5.34.38/.sl73_x8664_gcc485/rootdeb/tutorials");
+    gROOT->SetMacroPath(".:/star-sw/StRoot/macros/:./StRoot/macros:./StRoot/macros/graphics:./StRoot/macros/analysis:./StRoot/macros/test:./StRoot/macros/examples:./StRoot/macros/html:./StRoot/macros/qa:./StRoot/macros/calib:./StRoot/macros/mudst:/star/nfs4/AFS/star/packages/DEV/StRoot/macros:/star/nfs4/AFS/star/packages/DEV/StRoot/macros/graphics:/star/nfs4/AFS/star/packages/DEV/StRoot/macros/analysis:/star/nfs4/AFS/star/packages/DEV/StRoot/macros/test:/star/nfs4/AFS/star/packages/DEV/StRoot/macros/examples:/star/nfs4/AFS/star/packages/DEV/StRoot/macros/html:/star/nfs4/AFS/star/packages/DEV/StRoot/macros/qa:/star/nfs4/AFS/star/packages/DEV/StRoot/macros/calib:/star/nfs4/AFS/star/packages/DEV/StRoot/macros/mudst:/star/nfs4/AFS/star/ROOT/36/5.34.38/.sl73_x8664_gcc485/rootdeb/macros:/star/nfs4/AFS/star/ROOT/36/5.34.38/.sl73_x8664_gcc485/rootdeb/tutorials");
     gROOT->LoadMacro("bfc.C");
     //gSystem->Load( "StFttSimMaker" );
     //gSystem->Load( "libStFcsTrackMatchMaker" );
@@ -32,6 +32,7 @@ void runSimBfc( Int_t nEvents=100, Int_t run=0, const char* pid="", int TrgVersi
     // gMessMgr->SetLimit("W",0);
     //gSystem->Load( "libStarGeneratorUtil" );
     //  gROOT->Macro("loadMuDst.C");
+    // gSystem->Load( "StBTofUtil.so" );
     TString myDat;
     TString proc(pid);
     if(proc.Contains("dy") || proc.Contains("mb") || proc.Contains("jet") || proc.Contains("dybg")){
@@ -49,7 +50,7 @@ void runSimBfc( Int_t nEvents=100, Int_t run=0, const char* pid="", int TrgVersi
     }
 
     printf("Opening %s\n",(myDir+myDat).Data());
-    bfc( -1, myChain, myDir+myDat );
+    bfc( -1, myChain, myDir+myDat, "" );
 
     TString outfile = myOutDir + myDat.ReplaceAll(".fzd",".root");      
     // cout << "output file=" <<outfile<<endl;
@@ -107,10 +108,13 @@ void runSimBfc( Int_t nEvents=100, Int_t run=0, const char* pid="", int TrgVersi
     cout << "Loading in StFwdTrackMaker..." << endl;
     // gSystem->Load("StFwdTrackMaker.so");
     StFwdTrackMaker *fwdTrack = (StFwdTrackMaker*) chain->GetMaker("fwdTrack");
+    cout << "fwdTrack="<<fwdTrack<<endl;
     if ( fwdTrack ){ //if it is in the chain
         // fwdTrack->setConfigForRealisticSim();
         fwdTrack->setSeedFindingWithFst();
         // StFwdHitLoader *fwdHitLoader = new StFwdHitLoader();
+        cout << "Setting FTT and FST hit sources to 0..." << endl;
+        // fwdTrack->setDataSource(0);
         fwdTrack->setFttHitSource(0);
         fwdTrack->setFstHitSource(0);
         // fwdTrack->setTrackRefit( true );
@@ -120,6 +124,7 @@ void runSimBfc( Int_t nEvents=100, Int_t run=0, const char* pid="", int TrgVersi
         // fwdTrack->SetMaxConnections( 900 );
         // write out wavefront OBJ files
         //fwdTrack->SetVisualize( false );
+        cout << "Setting debug level for fwdTrack to " << debug << endl;
         fwdTrack->SetDebug(debug);
     }
 
@@ -131,7 +136,7 @@ void runSimBfc( Int_t nEvents=100, Int_t run=0, const char* pid="", int TrgVersi
     gSystem->Load("StFcsTrackMatchMaker.so");
     StFcsTrackMatchMaker *fcsTrackMatch = new StFcsTrackMatchMaker("fcsTrackMatch");
     fcsTrackMatch->SetDebug(debug);
-    fcsTrackMatch->setFileName("fcsTrackMatch.root");
+    // fcsTrackMatch->setFileName("fcsTrackMatch.root");
 
     // cout << "Loading in StFwdFitQAMaker..." << endl;
     // gSystem->Load("StFwdUtils.so");

@@ -1,6 +1,7 @@
 simulation/output/
 simulation/job_submission/
 *.sl73_gcc485/
+*.sl73_x8664_gcc485/
 *.vscode/
 *.consign
 *.root
@@ -9,3 +10,4 @@ temp_gccflags.c
 mem.dat
 paw.metafile
 simulation/debug/
+simulation/jdb_2022_prod/
